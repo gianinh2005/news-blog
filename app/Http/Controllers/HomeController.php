@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Category;
+use App\Models\Post;
+use Illuminate\Http\Request;
+
+class HomeController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Post::with(['category', 'user'])
+            ->where('status', 'published')
+            ->latest('published_at');
+
+        // Tìm kiếm từ khóa
+        if ($request->filled('q')) {
+            $keyword = $request->q;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('summary', 'like', "%{$keyword}%");
+            });
+        }
+
+        // Lọc theo loại (news hoặc blog)
+        if ($request->filled('type') && in_array($request->type, ['news', 'blog'])) {
+            $query->where('type', $request->type);
+        }
+
+        $posts = $query->paginate(9)->withQueryString();
+        $featuredPosts = Post::where('status', 'published')->orderBy('views', 'desc')->take(5)->get();
+        $categories = Category::withCount('posts')->get();
+
+        return view('frontend.index', compact('posts', 'featuredPosts', 'categories'));
+    }
+
+    public function showCategory(string $slug)
+    {
+        $category = Category::where('slug', $slug)->firstOrFail();
+        $posts = $category->posts()
+            ->with(['user'])
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->paginate(9);
+
+        $categories = Category::withCount('posts')->get();
+
+        return view('frontend.category', compact('category', 'posts', 'categories'));
+    }
+
+    public function showPost(string $slug)
+    {
+        $post = Post::with(['category', 'user', 'comments.user'])
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
+
+        $post->increment('views');
+
+        $relatedPosts = Post::where('category_id', $post->category_id)
+            ->where('id', '!=', $post->id)
+            ->where('status', 'published')
+            ->take(3)
+            ->get();
+
+        return view('frontend.detail', compact('post', 'relatedPosts'));
+    }
+
+    public function storeComment(Request $request, Post $post)
+    {
+        $request->validate([
+            'content' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $post->comments()->create([
+            'user_id' => auth()->id(),
+            'content' => $request->content,
+        ]);
+
+        return back()->with('success', 'Bình luận của bạn đã được đăng tải.');
+    }
+}
