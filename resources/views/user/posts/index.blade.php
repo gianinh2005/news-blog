@@ -1,0 +1,103 @@
+@extends('layouts.app')
+@section('title', 'Quản lý bài viết của tôi')
+
+@section('content')
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="bi bi-journal-text text-primary"></i> Blog của tôi</h3>
+                <p class="text-muted small mb-0">Quản lý và xuất bản các bài viết, chia sẻ cá nhân của bạn</p>
+            </div>
+            <a href="{{ route('user.posts.create') }}" class="btn btn-primary">
+                <i class="bi bi-pencil-square me-1"></i> Viết bài mới
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 70px;">Ảnh</th>
+                                <th>Tiêu đề bài viết</th>
+                                <th>Chuyên mục</th>
+                                <th>Trạng thái</th>
+                                <th>Lượt xem</th>
+                                <th>Ngày đăng</th>
+                                <th class="text-end" style="width: 140px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($posts as $post)
+                                <tr>
+                                    <td>
+                                        @if($post->thumbnail)
+                                            <img src="{{ asset('storage/' . $post->thumbnail) }}" alt="{{ $post->title }}" class="rounded object-fit-cover" width="55" height="40">
+                                        @else
+                                            <div class="bg-light rounded text-center text-muted py-2" style="width: 55px; height: 40px; font-size: 11px;">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-truncate" style="max-width: 320px;">
+                                            @if($post->status === 'published')
+                                                <a href="{{ route('post.show', $post->slug) }}" target="_blank" class="text-decoration-none text-dark">
+                                                    {{ $post->title }} <i class="bi bi-box-arrow-up-right small text-muted"></i>
+                                                </a>
+                                            @else
+                                                <span class="text-muted">{{ $post->title }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary border">{{ $post->category->name ?? 'Chưa phân loại' }}</span></td>
+                                    <td>
+                                        @if($post->status === 'published')
+                                            <span class="badge bg-success-subtle text-success border border-success">Đã xuất bản</span>
+                                        @else
+                                            <span class="badge bg-warning-subtle text-warning border border-warning">Bản nháp</span>
+                                        @endif
+                                    </td>
+                                    <td><small class="text-muted"><i class="bi bi-eye"></i> {{ number_format($post->views) }}</small></td>
+                                    <td><small class="text-muted">{{ $post->created_at->format('d/m/Y') }}</small></td>
+                                    <td class="text-end">
+                                        <a href="{{ route('user.posts.edit', $post->id) }}" class="btn btn-outline-primary btn-sm me-1" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('user.posts.destroy', $post->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Xóa">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted mb-3">
+                                            <i class="bi bi-journal-x display-5"></i>
+                                            <p class="mt-2 mb-0">Bạn chưa có bài viết blog nào.</p>
+                                        </div>
+                                        <a href="{{ route('user.posts.create') }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-pencil-square"></i> Viết bài đầu tiên ngay
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @if($posts->hasPages())
+                <div class="card-footer bg-white py-3 border-0">
+                    {{ $posts->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+@endsection

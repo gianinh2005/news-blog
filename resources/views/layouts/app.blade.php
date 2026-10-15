@@ -34,18 +34,31 @@
                     <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-search"></i></button>
                 </form>
 
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-center">
                     @auth
+                        <li class="nav-item me-2">
+                            <a class="btn btn-warning btn-sm text-dark fw-semibold" href="{{ route('user.posts.create') }}">
+                                <i class="bi bi-pencil-square me-1"></i> Viết bài
+                            </a>
+                        </li>
                         @if(auth()->user()->isAdmin())
                             <li class="nav-item"><a class="nav-link text-warning fw-semibold" href="{{ route('admin.dashboard') }}"><i class="bi bi-shield-lock"></i> Quản trị</a></li>
                         @endif
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">{{ auth()->user()->name }}</a>
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i> {{ auth()->user()->name }}
+                            </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('user.posts.index') }}">
+                                        <i class="bi bi-journal-text me-2 text-primary"></i> Blog của tôi
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST">
                                         @csrf
-                                        <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right me-1"></i> Đăng xuất</button>
+                                        <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</button>
                                     </form>
                                 </li>
                             </ul>

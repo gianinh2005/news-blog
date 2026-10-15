@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserPostController;
 use Illuminate\Support\Facades\Route;
 
 // --- GIAO DIỆN CLIENT ---
@@ -25,6 +26,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/dang-ky', [AuthController::class, 'register']);
 });
 Route::post('/dang-xuat', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// --- NGƯỜI DÙNG VIẾT BLOG CÁ NHÂN (CẦN ĐĂNG NHẬP) ---
+Route::middleware('auth')->prefix('tai-khoan')->name('user.')->group(function () {
+    Route::resource('posts', UserPostController::class)->except(['show']);
+});
 
 // --- TRANG QUẢN TRỊ (ADMIN) ---
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

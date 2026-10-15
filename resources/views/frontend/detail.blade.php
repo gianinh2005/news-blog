@@ -42,7 +42,7 @@
                     @foreach($relatedPosts as $rel)
                         <div class="col-md-4">
                             <div class="card h-100 border-0 shadow-sm">
-                                <img src="{{ $rel->thumbnail ? asset('storage/' . $rel->thumbnail) : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=300&auto=format&fit=crop&q=60' }}" 
+                                <img src="{{ $rel->thumbnail ? asset('storage/' . $rel->thumbnail) : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=300&auto=format&fit=crop&q=60' }}"
                                      class="card-img-top" style="height: 120px; object-fit: cover;" alt="">
                                 <div class="card-body p-2">
                                     <h6 class="card-title mb-0">
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-0 fw-bold">{{ $comment->user->name }} 
+                                <h6 class="mb-0 fw-bold">{{ $comment->user->name }}
                                     <small class="text-muted fw-normal font-monospace" style="font-size: 0.8rem;">• {{ $comment->created_at->diffForHumans() }}</small>
                                 </h6>
                                 <p class="mb-0 text-secondary mt-1">{{ $comment->content }}</p>

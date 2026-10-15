@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -49,14 +50,21 @@ class HomeController extends Controller
         return view('frontend.category', compact('category', 'posts', 'categories'));
     }
 
-    public function showPost(string $slug)
+    public function showPost(Request $request, string $slug)
     {
         $post = Post::with(['category', 'user', 'comments.user'])
             ->where('slug', $slug)
             ->where('status', 'published')
             ->firstOrFail();
 
-        $post->increment('views');
+        // Chống spam lượt xem: 1 địa chỉ IP chỉ được tính 1 lượt xem trong vòng 1 giờ (60 phút)
+        $ip = $request->ip();
+        $cacheKey = 'viewed_post_'.$post->id.'_'.$ip;
+
+        if (! Cache::has($cacheKey)) {
+            $post->increment('views');
+            Cache::put($cacheKey, true, now()->addHours(1));
+        }
 
         $relatedPosts = Post::where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
