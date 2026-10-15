@@ -43,14 +43,14 @@ class UserPostController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
-            'status' => ['required', 'in:draft,published'],
+            'status' => ['required', 'in:draft,pending'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
         $data['user_id'] = auth()->id();
         $data['type'] = 'blog'; // User đăng mặc định là dạng Blog cá nhân
         $data['slug'] = Str::slug($data['title']).'-'.time();
-        $data['published_at'] = $data['status'] === 'published' ? now() : null;
+        $data['published_at'] = null; // Chờ admin duyệt mới có ngày xuất bản
 
         if ($request->hasFile('thumbnail')) {
             $data['thumbnail'] = $request->file('thumbnail')->store('posts', 'public');
@@ -58,7 +58,11 @@ class UserPostController extends Controller
 
         Post::create($data);
 
-        return redirect()->route('user.posts.index')->with('success', 'Đăng bài blog thành công!');
+        $msg = $data['status'] === 'pending'
+            ? 'Đã gửi bài viết lên ban quản trị. Bài viết sẽ xuất hiện sau khi được duyệt!'
+            : 'Đã lưu bài viết vào bản nháp thành công!';
+
+        return redirect()->route('user.posts.index')->with('success', $msg);
     }
 
     /**
@@ -90,12 +94,13 @@ class UserPostController extends Controller
             'category_id' => ['required', 'exists:categories,id'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
-            'status' => ['required', 'in:draft,published'],
+            'status' => ['required', 'in:draft,pending'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
-        if ($data['status'] === 'published' && ! $post->published_at) {
-            $data['published_at'] = now();
+        // Nếu sửa lại và gửi duyệt, reset lý do từ chối
+        if ($data['status'] === 'pending') {
+            $data['reject_reason'] = null;
         }
 
         if ($request->hasFile('thumbnail')) {
@@ -107,7 +112,11 @@ class UserPostController extends Controller
 
         $post->update($data);
 
-        return redirect()->route('user.posts.index')->with('success', 'Cập nhật bài viết thành công!');
+        $msg = $data['status'] === 'pending'
+            ? 'Đã cập nhật và gửi lại bài viết chờ ban quản trị duyệt!'
+            : 'Đã lưu thay đổi vào bản nháp!';
+
+        return redirect()->route('user.posts.index')->with('success', $msg);
     }
 
     /**

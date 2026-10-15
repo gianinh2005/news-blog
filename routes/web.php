@@ -36,5 +36,9 @@ Route::middleware('auth')->prefix('tai-khoan')->name('user.')->group(function ()
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('categories', CategoryController::class)->except(['show']);
+
+    // Duyệt & Từ chối bài viết
+    Route::patch('posts/{post}/approve', [PostController::class, 'approve'])->name('posts.approve');
+    Route::patch('posts/{post}/reject', [PostController::class, 'reject'])->name('posts.reject');
     Route::resource('posts', PostController::class)->except(['show']);
 });

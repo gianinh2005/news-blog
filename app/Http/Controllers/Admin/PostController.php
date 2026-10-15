@@ -11,11 +11,27 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::with(['category', 'user'])->latest()->paginate(10);
+        // Admin chỉ xem được:
+        // 1. Bài của chính Admin (bất kể trạng thái nào)
+        // 2. Bài của người dùng khác NHƯNG chỉ khi bài đó đã được gửi duyệt (pending, published, rejected), KHÔNG xem bản nháp riêng tư của user
+        $query = Post::with(['category', 'user'])
+            ->where(function ($q) {
+                $q->where('user_id', auth()->id())
+                    ->orWhere('status', '!=', 'draft');
+            })
+            ->latest();
 
-        return view('admin.posts.index', compact('posts'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $posts = $query->paginate(10)->withQueryString();
+
+        $countPending = Post::where('status', 'pending')->count();
+
+        return view('admin.posts.index', compact('posts', 'countPending'));
     }
 
     public function create()
@@ -33,7 +49,7 @@ class PostController extends Controller
             'type' => ['required', 'in:news,blog'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
-            'status' => ['required', 'in:draft,published'],
+            'status' => ['required', 'in:draft,published,pending,rejected'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
@@ -52,6 +68,11 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
+        // Admin chỉ được sửa nội dung bài viết của chính Admin tạo
+        if ($post->user_id !== auth()->id()) {
+            abort(403, 'Bạn chỉ có quyền Duyệt hoặc Từ chối bài viết của người khác, không được tự ý sửa nội dung tác giả.');
+        }
+
         $categories = Category::all();
 
         return view('admin.posts.edit', compact('post', 'categories'));
@@ -59,13 +80,17 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
+        if ($post->user_id !== auth()->id()) {
+            abort(403, 'Bạn chỉ có quyền Duyệt hoặc Từ chối bài viết của người khác, không được tự ý sửa nội dung tác giả.');
+        }
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'exists:categories,id'],
             'type' => ['required', 'in:news,blog'],
             'summary' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
-            'status' => ['required', 'in:draft,published'],
+            'status' => ['required', 'in:draft,published,pending,rejected'],
+            'reject_reason' => ['nullable', 'string', 'max:500'],
             'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 
@@ -83,6 +108,37 @@ class PostController extends Controller
         $post->update($data);
 
         return redirect()->route('admin.posts.index')->with('success', 'Cập nhật bài viết thành công!');
+    }
+
+    /**
+     * Duyệt bài viết nhanh (Phê duyệt).
+     */
+    public function approve(Post $post)
+    {
+        $post->update([
+            'status' => 'published',
+            'published_at' => $post->published_at ?? now(),
+            'reject_reason' => null,
+        ]);
+
+        return back()->with('success', "Đã phê duyệt và xuất bản bài viết '{$post->title}'!");
+    }
+
+    /**
+     * Từ chối bài viết kèm lý do.
+     */
+    public function reject(Request $request, Post $post)
+    {
+        $request->validate([
+            'reject_reason' => ['required', 'string', 'max:500'],
+        ]);
+
+        $post->update([
+            'status' => 'rejected',
+            'reject_reason' => $request->reject_reason,
+        ]);
+
+        return back()->with('success', "Đã từ chối bài viết '{$post->title}'!");
     }
 
     public function destroy(Post $post)

@@ -54,16 +54,24 @@ class HomeController extends Controller
     {
         $post = Post::with(['category', 'user', 'comments.user'])
             ->where('slug', $slug)
-            ->where('status', 'published')
             ->firstOrFail();
 
-        // Chống spam lượt xem: 1 địa chỉ IP chỉ được tính 1 lượt xem trong vòng 1 giờ (60 phút)
-        $ip = $request->ip();
-        $cacheKey = 'viewed_post_'.$post->id.'_'.$ip;
+        // Nếu bài chưa xuất bản, chỉ cho phép tác giả bài viết hoặc Admin xem trước (preview)
+        if ($post->status !== 'published') {
+            if (! auth()->check() || (auth()->id() !== $post->user_id && ! auth()->user()->isAdmin())) {
+                abort(404);
+            }
+        }
 
-        if (! Cache::has($cacheKey)) {
-            $post->increment('views');
-            Cache::put($cacheKey, true, now()->addHours(1));
+        // Chống spam lượt xem: chỉ tăng view cho bài đã xuất bản và 1 IP chỉ tính 1 lần trong 1 giờ
+        if ($post->status === 'published') {
+            $ip = $request->ip();
+            $cacheKey = 'viewed_post_'.$post->id.'_'.$ip;
+
+            if (! Cache::has($cacheKey)) {
+                $post->increment('views');
+                Cache::put($cacheKey, true, now()->addHours(1));
+            }
         }
 
         $relatedPosts = Post::where('category_id', $post->category_id)

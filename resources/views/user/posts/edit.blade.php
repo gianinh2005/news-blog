@@ -25,6 +25,14 @@
                     </div>
                 @endif
 
+                @if($post->status === 'rejected' && $post->reject_reason)
+                    <div class="alert alert-warning py-3 border-start border-4 border-warning mb-4">
+                        <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i> Lý do ban quản trị từ chối bài viết:</h6>
+                        <p class="mb-0 text-secondary">{{ $post->reject_reason }}</p>
+                        <small class="text-muted fst-italic">Vui lòng điều chỉnh lại nội dung theo yêu cầu và chọn "Gửi duyệt lại".</small>
+                    </div>
+                @endif
+
                 <form action="{{ route('user.posts.update', $post->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
@@ -46,10 +54,10 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Trạng thái <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Hành động <span class="text-danger">*</span></label>
                             <select name="status" class="form-select" required>
-                                <option value="published" {{ old('status', $post->status) == 'published' ? 'selected' : '' }}>Công khai</option>
-                                <option value="draft" {{ old('status', $post->status) == 'draft' ? 'selected' : '' }}>Bản nháp</option>
+                                <option value="pending" {{ old('status', $post->status) === 'pending' || $post->status === 'rejected' ? 'selected' : '' }}>🚀 Gửi duyệt bài viết (Chờ Admin phê duyệt)</option>
+                                <option value="draft" {{ old('status', $post->status) === 'draft' ? 'selected' : '' }}>💾 Lưu bản nháp (Chưa gửi)</option>
                             </select>
                         </div>
                     </div>

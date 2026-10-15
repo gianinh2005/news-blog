@@ -45,11 +45,12 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Trạng thái xuất bản <span class="text-danger">*</span></label>
+                            <label class="form-label fw-semibold">Hành động <span class="text-danger">*</span></label>
                             <select name="status" class="form-select" required>
-                                <option value="published" {{ old('status', 'published') == 'published' ? 'selected' : '' }}>Công khai (Xuất bản ngay)</option>
-                                <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Lưu bản nháp</option>
+                                <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>🚀 Gửi duyệt bài viết (Chờ Admin phê duyệt)</option>
+                                <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>💾 Lưu bản nháp (Chưa gửi)</option>
                             </select>
+                            <small class="text-muted">Bài viết sau khi gửi sẽ được Admin duyệt trước khi xuất hiện trên trang chủ.</small>
                         </div>
                     </div>
 

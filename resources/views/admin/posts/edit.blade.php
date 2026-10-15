@@ -63,10 +63,17 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Trạng thái <span class="text-danger">*</span></label>
-                            <select name="status" class="form-select" required>
-                                <option value="published" {{ old('status', $post->status) == 'published' ? 'selected' : '' }}>Xuất bản (Published)</option>
-                                <option value="draft" {{ old('status', $post->status) == 'draft' ? 'selected' : '' }}>Bản nháp (Draft)</option>
+                            <select name="status" class="form-select" id="statusSelect" required>
+                                <option value="published" {{ old('status', $post->status) == 'published' ? 'selected' : '' }}>✅ Đã duyệt / Xuất bản (Published)</option>
+                                <option value="pending" {{ old('status', $post->status) == 'pending' ? 'selected' : '' }}>⏳ Chờ duyệt (Pending)</option>
+                                <option value="rejected" {{ old('status', $post->status) == 'rejected' ? 'selected' : '' }}>❌ Bị từ chối (Rejected)</option>
+                                <option value="draft" {{ old('status', $post->status) == 'draft' ? 'selected' : '' }}>📝 Bản nháp (Draft)</option>
                             </select>
+                        </div>
+
+                        <div class="mb-3" id="rejectReasonBox">
+                            <label class="form-label fw-semibold text-danger">Lý do từ chối (nếu có)</label>
+                            <textarea name="reject_reason" class="form-control" rows="3" placeholder="Nhập lý do gửi đến tác giả...">{{ old('reject_reason', $post->reject_reason) }}</textarea>
                         </div>
 
                         <div class="mb-3">

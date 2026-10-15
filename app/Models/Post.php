@@ -21,6 +21,7 @@ class Post extends Model
         'thumbnail',
         'type',
         'status',
+        'reject_reason',
         'views',
         'published_at',
     ];

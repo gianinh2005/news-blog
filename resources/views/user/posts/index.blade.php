@@ -55,9 +55,18 @@
                                     <td><span class="badge bg-secondary-subtle text-secondary border">{{ $post->category->name ?? 'Chưa phân loại' }}</span></td>
                                     <td>
                                         @if($post->status === 'published')
-                                            <span class="badge bg-success-subtle text-success border border-success">Đã xuất bản</span>
+                                            <span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-check-circle me-1"></i> Đã duyệt</span>
+                                        @elseif($post->status === 'pending')
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning"><i class="bi bi-clock-history me-1"></i> Chờ duyệt</span>
+                                        @elseif($post->status === 'rejected')
+                                            <span class="badge bg-danger-subtle text-danger border border-danger"><i class="bi bi-x-circle me-1"></i> Bị từ chối</span>
+                                            @if($post->reject_reason)
+                                                <div class="small text-danger mt-1 text-truncate" style="max-width: 140px;" title="{{ $post->reject_reason }}">
+                                                    Lý do: {{ $post->reject_reason }}
+                                                </div>
+                                            @endif
                                         @else
-                                            <span class="badge bg-warning-subtle text-warning border border-warning">Bản nháp</span>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary"><i class="bi bi-file-earmark me-1"></i> Bản nháp</span>
                                         @endif
                                     </td>
                                     <td><small class="text-muted"><i class="bi bi-eye"></i> {{ number_format($post->views) }}</small></td>
