@@ -1,6 +1,7 @@
 {
     "name": "Laravel News Blog",
-    "image": "mcr.microsoft.com/devcontainers/php:8.3",
+    // PHP 8.4 bắt buộc vì Symfony 8.1.x (dùng trong Laravel 13.x) yêu cầu PHP >= 8.4.1
+    "image": "mcr.microsoft.com/devcontainers/php:8.4",
 
     // Cài thêm Node.js và các extension cần thiết
     "features": {
