@@ -1,0 +1,41 @@
+{
+    "name": "Laravel News Blog",
+    "image": "mcr.microsoft.com/devcontainers/php:8.3",
+
+    // Cài thêm Node.js và các extension cần thiết
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts"
+        }
+    },
+
+    // Cổng dùng cho PHP dev server và Vite
+    "forwardPorts": [8000, 5173],
+    "portsAttributes": {
+        "8000": { "label": "Laravel App", "onAutoForward": "openBrowser" },
+        "5173": { "label": "Vite Dev Server" }
+    },
+
+    // Các extension VS Code hữu ích trong Codespaces
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bmewburn.vscode-intelephense-client",
+                "onecentlin.laravel-blade",
+                "amiralizadeh9480.laravel-extra-intellisense",
+                "mikestead.dotenv",
+                "qwtel.sqlite-viewer"
+            ]
+        }
+    },
+
+    // Tự động chạy sau khi tạo container:
+    // 1. Cài PHP dependencies
+    // 2. Tạo .env, generate key
+    // 3. Migrate DB (SQLite mặc định)
+    // 4. Cài Node dependencies
+    "postCreateCommand": "composer install && cp .env.example .env && php artisan key:generate && php artisan migrate --seed --force && npm install",
+
+    // Tự động khởi động server khi mở Codespace
+    "postStartCommand": "php artisan serve --host=0.0.0.0 --port=8000 &"
+}
