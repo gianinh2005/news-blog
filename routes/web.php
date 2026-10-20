@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\AuthController;
@@ -17,6 +18,11 @@ Route::get('/bai-viet/{slug}', [HomeController::class, 'showPost'])->name('post.
 Route::post('/bai-viet/{post}/comments', [HomeController::class, 'storeComment'])
     ->middleware('auth')
     ->name('comments.store');
+
+// Xóa bình luận (chỉ chủ sở hữu bình luận mới được xóa)
+Route::delete('/comments/{comment}', [HomeController::class, 'destroyComment'])
+    ->middleware('auth')
+    ->name('comments.destroy');
 
 // --- AUTHENTICATION ---
 Route::middleware('guest')->group(function () {
@@ -41,4 +47,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('posts/{post}/approve', [PostController::class, 'approve'])->name('posts.approve');
     Route::patch('posts/{post}/reject', [PostController::class, 'reject'])->name('posts.reject');
     Route::resource('posts', PostController::class)->except(['show']);
+
+    // Quản lý bình luận (xem danh sách + xóa spam)
+    Route::get('comments', [AdminCommentController::class, 'index'])->name('comments.index');
+    Route::delete('comments/{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
 });

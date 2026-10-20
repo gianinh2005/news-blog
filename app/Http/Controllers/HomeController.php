@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Comment;
 use App\Models\Post;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -83,17 +85,53 @@ class HomeController extends Controller
         return view('frontend.detail', compact('post', 'relatedPosts'));
     }
 
-    public function storeComment(Request $request, Post $post)
+    /**
+     * Lưu bình luận mới của người dùng đã đăng nhập.
+     *
+     * Validation:
+     *   - content: bắt buộc, kiểu chuỗi, tối thiểu 2 ký tự, tối đa 1000 ký tự.
+     */
+    public function storeComment(Request $request, Post $post): RedirectResponse
     {
+        // Kiểm tra dữ liệu đầu vào trước khi lưu
         $request->validate([
-            'content' => ['required', 'string', 'max:1000'],
+            'content' => [
+                'required',
+                'string',
+                'min:2',    // Tối thiểu 2 ký tự, tránh comment rỗng/ký tự đơn
+                'max:1000', // Giới hạn 1000 ký tự, tránh spam dài
+            ],
+        ], [
+            // Thông báo lỗi tiếng Việt
+            'content.required' => 'Vui lòng nhập nội dung bình luận.',
+            'content.min'      => 'Bình luận phải có ít nhất 2 ký tự.',
+            'content.max'      => 'Bình luận không được vượt quá 1000 ký tự.',
         ]);
 
+        // Tạo bình luận gắn với bài viết và người dùng hiện tại
         $post->comments()->create([
             'user_id' => auth()->id(),
             'content' => $request->content,
         ]);
 
         return back()->with('success', 'Bình luận của bạn đã được đăng tải.');
+    }
+
+    /**
+     * Xóa bình luận của chính người dùng đang đăng nhập.
+     *
+     * Chỉ chủ sở hữu bình luận mới được xóa.
+     * Dùng authorize() để đảm bảo quyền sở hữu.
+     */
+    public function destroyComment(Comment $comment): RedirectResponse
+    {
+        // Kiểm tra quyền: chỉ người tạo bình luận mới được xóa
+        if ($comment->user_id !== auth()->id()) {
+            abort(403, 'Bạn không có quyền xóa bình luận này.');
+        }
+
+        $comment->delete();
+
+        return back()->with('success', 'Đã xóa bình luận của bạn.');
     }
 }

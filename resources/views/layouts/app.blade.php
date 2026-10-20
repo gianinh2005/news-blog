@@ -93,5 +93,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- Stack cho các script tùy chỉnh của từng trang (vd: counter ký tự bình luận) --}}
+    @stack('scripts')
 </body>
 </html>

@@ -39,6 +39,12 @@
                             <i class="bi bi-tags me-2"></i> Quản lý Danh mục
                         </a>
                     </li>
+                    {{-- Menu quản lý bình luận - admin có thể xóa spam --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}" href="{{ route('admin.comments.index') }}">
+                            <i class="bi bi-chat-left-text me-2"></i> Quản lý Bình luận
+                        </a>
+                    </li>
                     <li class="nav-item border-top border-secondary pt-3 mt-4">
                         <a class="nav-link text-info" href="{{ route('home') }}" target="_blank">
                             <i class="bi bi-box-arrow-up-right me-2"></i> Xem trang Client
