@@ -2,85 +2,134 @@
 @section('title', 'Bảng điều khiển quản trị')
 
 @section('content')
-<h3 class="fw-bold mb-4">Tổng quan hệ thống</h3>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Tổng quan hệ thống</h3>
+        <p class="text-muted small mb-0">Thống kê hoạt động tin tức, bài viết và tương tác người dùng</p>
+    </div>
+</div>
 
+{{-- Stat Cards with Modern Gradients --}}
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card bg-primary text-white p-3 shadow-sm">
+        <div class="stat-card-gradient" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-white-50 mb-1">Tổng bài viết</h6>
-                    <h2 class="fw-bold mb-0">{{ $totalPosts }}</h2>
+                    <div class="text-white-50 small fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.05em;">Tổng bài viết</div>
+                    <h2 class="fw-bold mb-0 display-6">{{ number_format($totalPosts) }}</h2>
                 </div>
-                <i class="bi bi-file-earmark-text fs-1 opacity-50"></i>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card bg-success text-white p-3 shadow-sm">
+        <div class="stat-card-gradient" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-white-50 mb-1">Danh mục</h6>
-                    <h2 class="fw-bold mb-0">{{ $totalCategories }}</h2>
+                    <div class="text-white-50 small fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.05em;">Chuyên mục</div>
+                    <h2 class="fw-bold mb-0 display-6">{{ number_format($totalCategories) }}</h2>
                 </div>
-                <i class="bi bi-tags fs-1 opacity-50"></i>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-tags-fill"></i>
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card bg-warning text-dark p-3 shadow-sm">
+        <div class="stat-card-gradient" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-muted mb-1">Thành viên</h6>
-                    <h2 class="fw-bold mb-0">{{ $totalUsers }}</h2>
+                    <div class="text-white-50 small fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.05em;">Thành viên</div>
+                    <h2 class="fw-bold mb-0 display-6">{{ number_format($totalUsers) }}</h2>
                 </div>
-                <i class="bi bi-people fs-1 opacity-50"></i>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-people-fill"></i>
+                </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-xl-3">
-        <div class="card stat-card bg-info text-white p-3 shadow-sm">
+        <div class="stat-card-gradient" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-white-50 mb-1">Lượt xem</h6>
-                    <h2 class="fw-bold mb-0">{{ $totalViews }}</h2>
+                    <div class="text-white-50 small fw-semibold mb-1 text-uppercase" style="letter-spacing: 0.05em;">Lượt xem</div>
+                    <h2 class="fw-bold mb-0 display-6">{{ number_format($totalViews) }}</h2>
                 </div>
-                <i class="bi bi-eye fs-1 opacity-50"></i>
+                <div class="stat-icon-wrap">
+                    <i class="bi bi-eye-fill"></i>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm border-0 rounded-3">
-    <div class="card-header bg-white fw-bold py-3">
-        <i class="bi bi-clock-history me-1"></i> Bài viết vừa cập nhật
+{{-- Recent Posts Table --}}
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+        <span class="fw-bold">
+            <i class="bi bi-clock-history text-primary me-2"></i> Bài viết vừa cập nhật
+        </span>
+        <a href="{{ route('admin.posts.index') }}" class="small text-decoration-none text-primary fw-semibold">
+            Xem toàn bộ <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
+
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead class="table-light text-muted small">
                     <tr>
-                        <th>Tiêu đề</th>
+                        <th class="ps-4">Tiêu đề</th>
                         <th>Loại</th>
                         <th>Danh mục</th>
                         <th>Tác giả</th>
                         <th>Trạng thái</th>
-                        <th>Ngày đăng</th>
+                        <th class="pe-4 text-end">Ngày đăng</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($recentPosts as $p)
                         <tr>
-                            <td class="fw-semibold">{{ Str::limit($p->title, 45) }}</td>
-                            <td><span class="badge {{ $p->type == 'news' ? 'bg-danger' : 'bg-success' }}">{{ $p->type }}</span></td>
-                            <td>{{ $p->category->name }}</td>
-                            <td>{{ $p->user->name }}</td>
-                            <td><span class="badge {{ $p->status == 'published' ? 'bg-primary' : 'bg-secondary' }}">{{ $p->status }}</span></td>
-                            <td>{{ $p->created_at->format('d/m/Y') }}</td>
+                            <td class="ps-4">
+                                <a href="{{ route('post.show', $p->slug) }}" target="_blank" class="fw-semibold text-dark text-decoration-none">
+                                    {{ Str::limit($p->title, 50) }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge {{ $p->type == 'news' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success' }} rounded-pill px-2 py-1">
+                                    {{ $p->type == 'news' ? 'Tin tức' : 'Blog' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-secondary border rounded-pill">{{ $p->category->name }}</span>
+                            </td>
+                            <td>
+                                <span class="small fw-medium">{{ $p->user->name }}</span>
+                            </td>
+                            <td>
+                                @if($p->status == 'published')
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1">Đã xuất bản</span>
+                                @elseif($p->status == 'pending')
+                                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1">Chờ duyệt</span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">{{ $p->status }}</span>
+                                @endif
+                            </td>
+                            <td class="pe-4 text-end text-muted small">
+                                {{ $p->created_at->format('d/m/Y H:i') }}
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">Chưa có bài viết nào.</td>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                Chưa có bài viết nào trong hệ thống.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
