@@ -46,7 +46,7 @@
 
                         <div class="post-card-body">
                             <div class="post-meta-top">
-                                <span>{{ $post->published_at ? $post->published_at->format('d/m/Y') : $post->created_at->format('d/m/Y') }}</span>
+                                <span>{{ $post->published_at ? $post->published_at->diffForHumans() : $post->created_at->diffForHumans() }}</span>
                             </div>
 
                             <h4 class="post-title">
@@ -69,7 +69,6 @@
 
                                 <div class="d-flex align-items-center gap-3">
                                     <span title="Lượt xem"><i class="bi bi-eye me-1"></i>{{ number_format($post->views) }}</span>
-                                    <span title="Thời gian đọc ước tính"><i class="bi bi-clock me-1"></i>{{ max(1, ceil(str_word_count(strip_tags($post->content)) / 200)) }}p</span>
                                 </div>
                             </div>
                         </div>
