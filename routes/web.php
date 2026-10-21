@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/danh-muc/{slug}', [HomeController::class, 'showCategory'])->name('category.show');
 Route::get('/bai-viet/{slug}', [HomeController::class, 'showPost'])->name('post.show');
+Route::post('/posts/{post}/increment-views', [HomeController::class, 'incrementViews']);
 
 // Bình luận (cần đăng nhập)
 Route::post('/bai-viet/{post}/comments', [HomeController::class, 'storeComment'])
