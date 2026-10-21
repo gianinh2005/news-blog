@@ -1,5 +1,6 @@
 <?php
-
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -32,7 +33,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/dang-ky', [AuthController::class, 'register']);
 });
 Route::post('/dang-xuat', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function () {
+    Route::get('/ho-so', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
+    Route::put('/ho-so', [ProfileController::class, 'update'])
+        ->name('profile.update');
+});
 // --- NGƯỜI DÙNG VIẾT BLOG CÁ NHÂN (CẦN ĐĂNG NHẬP) ---
 Route::middleware('auth')->prefix('tai-khoan')->name('user.')->group(function () {
     Route::resource('posts', UserPostController::class)->except(['show']);
@@ -51,4 +58,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Quản lý bình luận (xem danh sách + xóa spam)
     Route::get('comments', [AdminCommentController::class, 'index'])->name('comments.index');
     Route::delete('comments/{comment}', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
+    // Quản lý tài khoản
+    Route::resource('users', AdminUserController::class)
+        ->only(['index', 'update']);
+
+    Route::patch('users/{user}/status', [AdminUserController::class, 'toggleStatus'])
+        ->name('users.status');
 });

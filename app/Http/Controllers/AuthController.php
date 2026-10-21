@@ -21,8 +21,12 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // Chỉ cho phép tài khoản đang hoạt động đăng nhập.
+        $credentials['is_active'] = true;
+
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
             if (Auth::user()->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
             }
@@ -31,7 +35,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Thông tin đăng nhập không chính xác.',
+            'email' => 'Email, mật khẩu không chính xác hoặc tài khoản đã bị khóa.',
         ])->onlyInput('email');
     }
 
@@ -57,12 +61,14 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Đăng ký tài khoản thành công!');
+        return redirect()->route('home')
+            ->with('success', 'Đăng ký tài khoản thành công!');
     }
 
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

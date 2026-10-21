@@ -1,3 +1,4 @@
+```php
 <?php
 
 namespace App\Models;
@@ -25,6 +26,15 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -40,3 +50,4 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 }
+```

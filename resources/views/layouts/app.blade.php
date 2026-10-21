@@ -84,7 +84,18 @@
 
                         <li class="nav-item dropdown">
                             <a class="user-pill-btn dropdown-toggle text-decoration-none" href="#" data-bs-toggle="dropdown">
-                                <span class="avatar-badge">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                        @if (auth()->user()->avatar)
+                        <img
+                            src="{{ asset('storage/' . auth()->user()->avatar) }}"
+                            alt="Ảnh đại diện"
+                            class="avatar-badge"
+                            style="width: 32px; height: 32px; object-fit: cover; border-radius: 50%;"
+                        >
+                        @else
+                            <span class="avatar-badge">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </span>
+                        @endif
                                 <span>{{ Str::limit(auth()->user()->name, 15) }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 py-2" style="min-width: 200px;">
@@ -97,6 +108,13 @@
                                         <i class="bi bi-journal-richtext me-2 text-primary"></i> Blog của tôi
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
+                                        <i class="bi bi-person-circle me-2 text-primary"></i>
+                                        Thông tin cá nhân
+                                    </a>
+                                </li>
+
                                 <li><hr class="dropdown-divider my-1"></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST">
