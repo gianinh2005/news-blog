@@ -163,6 +163,19 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}"
+                                href="{{ route('admin.reports.index') }}">
+                            <i class="bi bi-flag-fill me-2"></i> Xử lý Báo cáo
+                            @php
+                                $pendingReportsCount = \App\Models\Report::where('status', 'pending')->count();
+                            @endphp
+                            @if($pendingReportsCount > 0)
+                                <span class="badge bg-danger rounded-pill ms-auto">{{ $pendingReportsCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+
                     <li class="nav-item border-top border-secondary pt-3 mt-4">
                         <a class="nav-link text-info" href="{{ route('home') }}" target="_blank">
                             <i class="bi bi-box-arrow-up-right me-2"></i> Xem trang Client

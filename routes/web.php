@@ -1,12 +1,16 @@
 <?php
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserPostController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +36,16 @@ Route::middleware('guest')->group(function () {
     Route::post('/dang-nhap', [AuthController::class, 'login']);
     Route::get('/dang-ky', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/dang-ky', [AuthController::class, 'register']);
+
+    // Quên mật khẩu
+    Route::get('/quen-mat-khau', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/quen-mat-khau', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 });
+
+// Đặt lại mật khẩu từ email (không bọc trong guest middleware để dù đang login hay chưa cũng mở được)
+Route::get('/dat-lai-mat-khau/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/dat-lai-mat-khau', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
 Route::post('/dang-xuat', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/ho-so', [ProfileController::class, 'edit'])
@@ -40,7 +53,15 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/ho-so', [ProfileController::class, 'update'])
         ->name('profile.update');
+
+    Route::put('/ho-so/doi-mat-khau', [ProfileController::class, 'updatePassword'])
+        ->name('profile.password');
 });
+// --- BÁO CÁO VI PHẠM (CẦN ĐĂNG NHẬP) ---
+Route::post('/reports', [ReportController::class, 'store'])
+    ->middleware('auth')
+    ->name('reports.store');
+
 // --- NGƯỜI DÙNG VIẾT BLOG CÁ NHÂN (CẦN ĐĂNG NHẬP) ---
 Route::middleware('auth')->prefix('tai-khoan')->name('user.')->group(function () {
     Route::resource('posts', UserPostController::class)->except(['show']);
@@ -65,4 +86,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::patch('users/{user}/status', [AdminUserController::class, 'toggleStatus'])
         ->name('users.status');
+
+    // Quản lý Báo cáo vi phạm
+    Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::patch('reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
+    Route::patch('reports/{report}/take-down', [AdminReportController::class, 'takeDownContent'])->name('reports.take-down');
+    Route::patch('reports/{report}/lock-user', [AdminReportController::class, 'lockUser'])->name('reports.lock-user');
 });

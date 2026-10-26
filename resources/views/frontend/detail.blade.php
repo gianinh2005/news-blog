@@ -87,6 +87,16 @@
                     <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($post->title) }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-circle" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Chia sẻ X / Twitter">
                         <i class="bi bi-twitter-x"></i>
                     </a>
+                    {{-- Nút báo cáo bài viết --}}
+                    @auth
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#reportPostModal" title="Báo cáo bài viết này">
+                        <i class="bi bi-flag me-1"></i> Báo cáo
+                    </button>
+                    @else
+                    <a href="{{ route('login') }}" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Đăng nhập để báo cáo bài viết">
+                        <i class="bi bi-flag me-1"></i> Báo cáo
+                    </a>
+                    @endauth
                 </div>
             </div>
         </header>
@@ -269,6 +279,14 @@
                                         <i class="bi bi-trash3 small"></i>
                                     </button>
                                 </form>
+                                @else
+                                {{-- Nút báo cáo bình luận --}}
+                                <button type="button" 
+                                    class="btn btn-sm btn-link text-secondary p-0 ms-1" 
+                                    onclick="openReportCommentModal({{ $comment->id }}, '{{ addslashes(Str::limit($comment->content, 60)) }}')"
+                                    title="Báo cáo bình luận này vi phạm">
+                                    <i class="bi bi-flag small"></i>
+                                </button>
                                 @endif
                                 @endauth
                             </div>
@@ -292,8 +310,110 @@
     </div>
 </div>
 
+{{-- MODAL BÁO CÁO BÀI VIẾT --}}
+@auth
+<div class="modal fade" id="reportPostModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('reports.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="reportable_type" value="post">
+                <input type="hidden" name="reportable_id" value="{{ $post->id }}">
+
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-danger">
+                        <i class="bi bi-flag-fill me-1"></i> Báo cáo bài viết vi phạm
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="small text-muted mb-3">
+                        Bạn đang gửi báo cáo vi phạm cho bài viết: <br>
+                        <strong class="text-dark">{{ $post->title }}</strong>
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Lý do báo cáo vi phạm <span class="text-danger">*</span></label>
+                        <select name="reason" class="form-select" required>
+                            <option value="">-- Chọn lý do vi phạm --</option>
+                            @foreach(\App\Models\Report::REASONS as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold small">Mô tả chi tiết bổ sung (tùy chọn)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Cung cấp thêm ngữ cảnh hoặc dẫn chứng để quản trị viên dễ dàng xử lý..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 btn-sm fw-bold">
+                        <i class="bi bi-send-fill me-1"></i> Gửi báo cáo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL BÁO CÁO BÌNH LUẬN --}}
+<div class="modal fade" id="reportCommentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('reports.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="reportable_type" value="comment">
+                <input type="hidden" name="reportable_id" id="report-comment-id" value="">
+
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-danger">
+                        <i class="bi bi-flag-fill me-1"></i> Báo cáo bình luận vi phạm
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-light border small text-secondary p-2 mb-3">
+                        Nội dung bình luận: <em id="report-comment-preview"></em>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Lý do báo cáo vi phạm <span class="text-danger">*</span></label>
+                        <select name="reason" class="form-select" required>
+                            <option value="">-- Chọn lý do vi phạm --</option>
+                            @foreach(\App\Models\Report::REASONS as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold small">Mô tả chi tiết bổ sung (tùy chọn)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Cung cấp thêm chi tiết vi phạm..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 btn-sm fw-bold">
+                        <i class="bi bi-send-fill me-1"></i> Gửi báo cáo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endauth
+
 @push('scripts')
 <script>
+    function openReportCommentModal(commentId, previewText) {
+        document.getElementById('report-comment-id').value = commentId;
+        document.getElementById('report-comment-preview').textContent = previewText;
+        const modal = new bootstrap.Modal(document.getElementById('reportCommentModal'));
+        modal.show();
+    }
+
     function updateCharCount(textarea) {
         const count = textarea.value.length;
         const max = 1000;

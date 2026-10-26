@@ -37,6 +37,7 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-semibold small text-secondary mb-0">Mật khẩu</label>
+                            <a href="{{ route('password.request') }}" class="small text-decoration-none text-primary">Quên mật khẩu?</a>
                         </div>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted rounded-start-pill ps-3">

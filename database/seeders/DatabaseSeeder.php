@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Quản Trị Viên',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('123'),
                 'role' => 'admin',
                 'bio' => 'Quản trị viên & Tác giả chính của website tin tức và blog.',
             ]
@@ -29,8 +29,8 @@ class DatabaseSeeder extends Seeder
         $reader = User::firstOrCreate(
             ['email' => 'reader@gmail.com'],
             [
-                'name' => 'Nguyễn Văn Đọc Giả',
-                'password' => Hash::make('password123'),
+                'name' => 'Nguyễn Văn A',
+                'password' => Hash::make('123'),
                 'role' => 'user',
             ]
         );

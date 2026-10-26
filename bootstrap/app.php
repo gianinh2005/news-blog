@@ -17,12 +17,21 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
+        // Định tuyến lại khi đã đăng nhập: user thường về trang chủ, admin về dashboard
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->user() && $request->user()->isAdmin()) {
+                return route('admin.dashboard');
+            }
+
+            return route('home');
+        });
+
         $middleware->alias([
-        'admin' => AdminMiddleware::class,
+            'admin' => AdminMiddleware::class,
         ]);
 
         $middleware->appendToGroup('web', [
-        EnsureAccountIsActive::class,
+            EnsureAccountIsActive::class,
         ]);
     })
 

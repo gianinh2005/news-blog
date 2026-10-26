@@ -738,6 +738,165 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(-2px);
 }
 
+/* ==========================================================================
+   CHẾ ĐỘ TIẾP CẬN CHO NGƯỜI KHIẾM THỊ / NGƯỜI CAO TUỔI / BỆNH VỀ MẮT
+   ========================================================================== */
+
+/* 1. Kích thước chữ lớn & siêu lớn */
+body.font-size-large {
+    font-size: 1.18rem !important;
+    line-height: 1.85 !important;
+}
+body.font-size-large h1 { font-size: 2.6rem !important; }
+body.font-size-large h2 { font-size: 2.2rem !important; }
+body.font-size-large h3 { font-size: 1.85rem !important; }
+body.font-size-large h4 { font-size: 1.6rem !important; }
+body.font-size-large p, body.font-size-large .article-content { font-size: 1.25rem !important; line-height: 2 !important; }
+body.font-size-large .btn, body.font-size-large .form-control { font-size: 1.15rem !important; padding: 0.65rem 1.2rem !important; }
+
+body.font-size-xlarge {
+    font-size: 1.35rem !important;
+    line-height: 2.1 !important;
+}
+body.font-size-xlarge h1 { font-size: 3rem !important; }
+body.font-size-xlarge h2 { font-size: 2.5rem !important; }
+body.font-size-xlarge h3 { font-size: 2.1rem !important; }
+body.font-size-xlarge h4 { font-size: 1.8rem !important; }
+body.font-size-xlarge p, body.font-size-xlarge .article-content { font-size: 1.45rem !important; line-height: 2.2 !important; }
+body.font-size-xlarge .btn, body.font-size-xlarge .form-control { font-size: 1.3rem !important; padding: 0.85rem 1.4rem !important; }
+
+/* 2. Chế độ Tương phản cao (High Contrast - Vàng trên nền Đen) */
+body.theme-high-contrast {
+    background-color: #000000 !important;
+    color: #ffff00 !important; /* Vàng rực rỡ chuẩn thị lực kém */
+}
+body.theme-high-contrast .navbar-custom,
+body.theme-high-contrast .site-footer,
+body.theme-high-contrast .card,
+body.theme-high-contrast .bg-white,
+body.theme-high-contrast .bg-light,
+body.theme-high-contrast .modal-content,
+body.theme-high-contrast .comment-box,
+body.theme-high-contrast .comment-bubble,
+body.theme-high-contrast .dropdown-menu {
+    background-color: #121212 !important;
+    color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+}
+body.theme-high-contrast h1, 
+body.theme-high-contrast h2, 
+body.theme-high-contrast h3, 
+body.theme-high-contrast h4, 
+body.theme-high-contrast h5, 
+body.theme-high-contrast h6,
+body.theme-high-contrast .article-title,
+body.theme-high-contrast .text-dark,
+body.theme-high-contrast a:not(.btn) {
+    color: #00ffff !important; /* Xanh lục cyan sáng nổi bật cho tiêu đề / liên kết */
+}
+body.theme-high-contrast a:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+}
+body.theme-high-contrast .text-muted,
+body.theme-high-contrast .text-secondary {
+    color: #ffffff !important;
+}
+body.theme-high-contrast .btn-primary,
+body.theme-high-contrast .btn-success {
+    background: #ffff00 !important;
+    color: #000000 !important;
+    border: 2px solid #ffffff !important;
+    font-weight: 800 !important;
+}
+body.theme-high-contrast .form-control {
+    background-color: #000000 !important;
+    color: #ffff00 !important;
+    border: 2px solid #ffff00 !important;
+}
+
+/* 3. Chế độ Dịu mắt / Giảm mỏi mắt (Warm Sepia - chống chói cho người bệnh mắt) */
+body.theme-sepia {
+    background-color: #fbf0d9 !important;
+    color: #433422 !important;
+}
+body.theme-sepia .card,
+body.theme-sepia .bg-white,
+body.theme-sepia .comment-box,
+body.theme-sepia .modal-content {
+    background-color: #f4e3c1 !important;
+    color: #433422 !important;
+    border-color: #dfcaa2 !important;
+}
+body.theme-sepia .article-title,
+body.theme-sepia h1, body.theme-sepia h2, body.theme-sepia h3, body.theme-sepia h4 {
+    color: #2b1f11 !important;
+}
+body.theme-sepia .text-muted,
+body.theme-sepia .text-secondary {
+    color: #634f3a !important;
+}
+body.theme-sepia .navbar-custom {
+    background: #4a3728 !important;
+}
+body.theme-sepia .site-footer {
+    background: #2b1f11 !important;
+}
+
+/* 4. Chế độ Tối bảo vệ mắt (Dark Mode) */
+body.theme-dark {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+body.theme-dark .card,
+body.theme-dark .bg-white,
+body.theme-dark .comment-box,
+body.theme-dark .modal-content,
+body.theme-dark .dropdown-menu {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+body.theme-dark .article-title,
+body.theme-dark h1, body.theme-dark h2, body.theme-dark h3, body.theme-dark h4,
+body.theme-dark .text-dark {
+    color: #f8fafc !important;
+}
+body.theme-dark .text-muted,
+body.theme-dark .text-secondary {
+    color: #94a3b8 !important;
+}
+body.theme-dark .bg-light,
+body.theme-dark .comment-bubble {
+    background-color: #273549 !important;
+    color: #e2e8f0 !important;
+}
+body.theme-dark .form-control {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
+}
+
+/* 5. Phông chữ Dễ đọc cho chứng khó đọc (Dyslexia-friendly font) */
+body.font-dyslexic {
+    font-family: 'Verdana', 'Comic Sans MS', sans-serif !important;
+    letter-spacing: 0.06em !important;
+    word-spacing: 0.15em !important;
+}
+
+/* Nút hỗ trợ thị giác cố định góc màn hình */
+.accessibility-floating-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9998;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    transition: all 0.25s ease;
+}
+.accessibility-floating-btn:hover {
+    transform: scale(1.08);
+}
+
 /* Responsive tweaks */
 @media (max-width: 768px) {
     .hero-banner {

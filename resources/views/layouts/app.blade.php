@@ -209,18 +209,119 @@
 
             <div class="border-top border-secondary pt-3 d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small">
                 <div>© {{ date('Y') }} NEWS & BLOG. Tất cả quyền được bảo lưu.</div>
-                <div class="mt-2 mt-md-0">
+                <div class="mt-2 mt-md-0 d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#accessibilityModal">
+                        <i class="bi bi-eye-fill me-1 text-primary"></i> Chế độ hỗ trợ thị lực
+                    </button>
                     <span class="badge bg-secondary-subtle text-secondary-emphasis">Phiên bản Laravel 13</span>
                 </div>
             </div>
         </div>
     </footer>
 
+    {{-- NÚT FLOATING HỖ TRỢ THỊ GIÁC / NGƯỜI KHIẾM THỊ GÓC MÀN HÌNH --}}
+    <button type="button" 
+            class="btn btn-warning rounded-circle accessibility-floating-btn d-flex align-items-center justify-content-center border-2 border-white shadow"
+            style="width: 50px; height: 50px; font-size: 1.35rem;" 
+            data-bs-toggle="modal" 
+            data-bs-target="#accessibilityModal" 
+            title="Tùy chọn giao diện hỗ trợ thị giác / người lớn tuổi">
+        <i class="bi bi-universal-access text-dark"></i>
+    </button>
+
+    {{-- MODAL CÀI ĐẶT HỖ TRỢ THỊ LỰC (ACCESSIBILITY SETTINGS) --}}
+    <div class="modal fade" id="accessibilityModal" tabindex="-1" aria-labelledby="accessibilityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-dark text-white p-3 px-4">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="accessibilityModalLabel">
+                        <i class="bi bi-universal-access fs-4 text-warning"></i> Hỗ trợ Thị giác & Dễ đọc
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">
+                        Tùy chỉnh kích thước chữ và màu sắc màn hình phù hợp cho người cao tuổi, người thị lực kém hoặc mỏi mắt. Cài đặt sẽ được tự động ghi nhớ trên máy của bạn.
+                    </p>
+
+                    {{-- Cỡ chữ --}}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-type me-1 text-primary"></i> Kích thước chữ (Font Size)</span>
+                            <span id="current-font-label" class="badge bg-primary-subtle text-primary">Mặc định</span>
+                        </label>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary py-2" onclick="setFontSize('normal')">
+                                Vừa <small>(Mặc định)</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary py-2 fw-semibold" onclick="setFontSize('large')">
+                                Lớn <small>(+25%)</small>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary py-2 fw-bold" onclick="setFontSize('xlarge')">
+                                Rất Lớn <small>(+50%)</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Chủ đề màu sắc / Tương phản --}}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark mb-2">
+                            <i class="bi bi-palette me-1 text-primary"></i> Độ tương phản & Tông màu bảo vệ mắt
+                        </label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-dark w-100 py-2 text-start d-flex align-items-center gap-2 rounded-3" onclick="setTheme('default')">
+                                    <span class="rounded-circle border" style="width: 18px; height: 18px; background: #ffffff;"></span>
+                                    <span>Giao diện chuẩn</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-dark w-100 py-2 text-start d-flex align-items-center gap-2 rounded-3" onclick="setTheme('sepia')">
+                                    <span class="rounded-circle border" style="width: 18px; height: 18px; background: #fbf0d9;"></span>
+                                    <span>Vàng dịu (Ấm mắt)</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-dark w-100 py-2 text-start d-flex align-items-center gap-2 rounded-3" onclick="setTheme('dark')">
+                                    <span class="rounded-circle" style="width: 18px; height: 18px; background: #0f172a;"></span>
+                                    <span>Chế độ tối (Dark)</span>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-dark w-100 py-2 text-start d-flex align-items-center gap-2 rounded-3 bg-black text-warning border-warning" onclick="setTheme('high-contrast')">
+                                    <span class="rounded-circle" style="width: 18px; height: 18px; background: #ffff00;"></span>
+                                    <span class="fw-bold">Tương phản cao</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Phông chữ dễ đọc cho người khó đọc --}}
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="dyslexicToggle" onchange="toggleDyslexicFont(this.checked)">
+                        <label class="form-check-label fw-semibold text-dark small" for="dyslexicToggle">
+                            Bật phông chữ giãn cách rộng (Dễ đọc / Chống hoa mắt)
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 me-auto" onclick="resetAccessibility()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Khôi phục mặc định
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Reading Progress Bar Script -->
+    <!-- Reading Progress Bar Script & Accessibility Engine -->
     <script>
+        // Reading Progress
         window.addEventListener('scroll', () => {
             const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
@@ -230,6 +331,72 @@
                 progressEl.style.width = scrolled + '%';
             }
         });
+
+        // Accessibility Functions (Cỡ chữ, Màu tương phản, Phông chữ)
+        function applyAccessibilitySettings() {
+            const savedSize = localStorage.getItem('nb_font_size') || 'normal';
+            const savedTheme = localStorage.getItem('nb_theme') || 'default';
+            const savedDyslexic = localStorage.getItem('nb_dyslexic') === 'true';
+
+            // Apply Font Size
+            document.body.classList.remove('font-size-large', 'font-size-xlarge');
+            const fontLabel = document.getElementById('current-font-label');
+            if (savedSize === 'large') {
+                document.body.classList.add('font-size-large');
+                if (fontLabel) fontLabel.textContent = 'Lớn (+25%)';
+            } else if (savedSize === 'xlarge') {
+                document.body.classList.add('font-size-xlarge');
+                if (fontLabel) fontLabel.textContent = 'Rất Lớn (+50%)';
+            } else {
+                if (fontLabel) fontLabel.textContent = 'Vừa (Mặc định)';
+            }
+
+            // Apply Theme
+            document.body.classList.remove('theme-sepia', 'theme-dark', 'theme-high-contrast');
+            if (savedTheme === 'sepia') {
+                document.body.classList.add('theme-sepia');
+            } else if (savedTheme === 'dark') {
+                document.body.classList.add('theme-dark');
+            } else if (savedTheme === 'high-contrast') {
+                document.body.classList.add('theme-high-contrast');
+            }
+
+            // Apply Dyslexic Font
+            const toggle = document.getElementById('dyslexicToggle');
+            if (savedDyslexic) {
+                document.body.classList.add('font-dyslexic');
+                if (toggle) toggle.checked = true;
+            } else {
+                document.body.classList.remove('font-dyslexic');
+                if (toggle) toggle.checked = false;
+            }
+        }
+
+        function setFontSize(size) {
+            localStorage.setItem('nb_font_size', size);
+            applyAccessibilitySettings();
+        }
+
+        function setTheme(theme) {
+            localStorage.setItem('nb_theme', theme);
+            applyAccessibilitySettings();
+        }
+
+        function toggleDyslexicFont(enabled) {
+            localStorage.setItem('nb_dyslexic', enabled ? 'true' : 'false');
+            applyAccessibilitySettings();
+        }
+
+        function resetAccessibility() {
+            localStorage.removeItem('nb_font_size');
+            localStorage.removeItem('nb_theme');
+            localStorage.removeItem('nb_dyslexic');
+            applyAccessibilitySettings();
+        }
+
+        // Tự động nạp cấu hình khi mở trang
+        document.addEventListener('DOMContentLoaded', applyAccessibilitySettings);
+        applyAccessibilitySettings();
     </script>
 
     {{-- Stack cho script tùy chỉnh của trang con --}}
