@@ -10,9 +10,20 @@ class ProfileController extends Controller
 {
     public function edit(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+        $activeTab = $request->query('tab', 'profile');
+
+        $savedPosts = $user->savedPosts()
+            ->with(['user', 'category'])
+            ->paginate(6, ['*'], 'saved_page')
+            ->withQueryString();
+
+        $followingAuthors = $user->following()
+            ->withCount('publishedPosts')
+            ->paginate(10, ['*'], 'following_page')
+            ->withQueryString();
+
+        return view('profile.edit', compact('user', 'activeTab', 'savedPosts', 'followingAuthors'));
     }
 
     public function update(Request $request)

@@ -41,13 +41,13 @@
             width: 38px;
             height: 38px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            background: #2563eb;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
             font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
         .admin-nav-item .nav-link {
@@ -70,9 +70,9 @@
 
         .admin-nav-item .nav-link.active {
             color: #ffffff;
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            background: #2563eb;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
         .admin-nav-item .nav-link i {
@@ -91,7 +91,8 @@
             margin-bottom: 1.75rem;
         }
 
-        .stat-card-gradient {
+        .stat-card-gradient,
+        .stat-card-solid {
             border: none;
             border-radius: 16px;
             color: #ffffff;
@@ -102,7 +103,8 @@
             transition: transform 0.25s ease;
         }
 
-        .stat-card-gradient:hover {
+        .stat-card-gradient:hover,
+        .stat-card-solid:hover {
             transform: translateY(-4px);
         }
 
@@ -173,6 +175,13 @@
                             @if($pendingReportsCount > 0)
                                 <span class="badge bg-danger rounded-pill ms-auto">{{ $pendingReportsCount }}</span>
                             @endif
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.subscribers.*') ? 'active' : '' }}"
+                                href="{{ route('admin.subscribers.index') }}">
+                            <i class="bi bi-envelope-paper-fill me-2"></i> Bản tin Email
                         </a>
                     </li>
 

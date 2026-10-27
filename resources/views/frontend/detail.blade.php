@@ -46,7 +46,20 @@
                         {{ strtoupper(substr($post->user->name, 0, 1)) }}
                     </div>
                     <div>
-                        <div class="fw-bold text-dark small">{{ $post->user->name }}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-dark small">{{ $post->user->name }}</span>
+                            @if(!auth()->check() || auth()->id() !== $post->user_id)
+                            <button type="button"
+                                    id="btn-follow-top-{{ $post->user_id }}"
+                                    onclick="toggleFollow({{ $post->user_id }}, this)"
+                                    class="btn btn-xs {{ $isFollowingAuthor ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-2 py-0"
+                                    style="font-size: 0.72rem; line-height: 1.6;"
+                                    title="{{ $isFollowingAuthor ? 'Bỏ theo dõi tác giả' : 'Theo dõi tác giả' }}">
+                                <i class="bi {{ $isFollowingAuthor ? 'bi-check-lg' : 'bi-person-plus' }} me-1"></i>
+                                <span class="follow-text">{{ $isFollowingAuthor ? 'Đang theo dõi' : 'Theo dõi' }}</span>
+                            </button>
+                            @endif
+                        </div>
                         <div class="text-muted" style="font-size: 0.75rem;">
                             {{ $post->user->role === 'admin' ? 'Biên tập viên' : 'Tác giả' }}
                         </div>
@@ -72,12 +85,23 @@
                 </div>
             </div>
 
-            {{-- Quick Share Bar --}}
-            <div class="d-flex align-items-center justify-content-between py-2 border-bottom mb-4">
-                <span class="small text-muted fw-semibold">
-                    <i class="bi bi-share me-1"></i> Chia sẻ:
-                </span>
-                <div class="d-flex gap-2">
+            {{-- Quick Share & Action Bar --}}
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom mb-4">
+                <div class="d-flex align-items-center gap-2">
+                    {{-- Nút Lưu bài viết (Bookmark) --}}
+                    <button type="button" 
+                            id="btn-bookmark-{{ $post->id }}"
+                            onclick="toggleBookmark({{ $post->id }}, this)" 
+                            class="btn btn-sm {{ $isSaved ? 'btn-warning text-dark' : 'btn-outline-warning text-dark' }} rounded-pill px-3 shadow-sm fw-semibold" 
+                            title="{{ $isSaved ? 'Bỏ lưu bài viết' : 'Lưu bài viết xem sau' }}">
+                        <i class="bi {{ $isSaved ? 'bi-bookmark-fill' : 'bi-bookmark' }} me-1"></i>
+                        <span class="bookmark-text">{{ $isSaved ? 'Đã lưu' : 'Lưu bài' }}</span>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="small text-muted fw-semibold me-1">
+                        <i class="bi bi-share me-1"></i> Chia sẻ:
+                    </span>
                     <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="copyArticleUrl(this)" title="Sao chép liên kết">
                         <i class="bi bi-link-45deg me-1"></i> <span id="copy-text">Sao chép</span>
                     </button>
@@ -121,21 +145,115 @@
         @endif
 
         {{-- Main Article Content --}}
-        <div class="article-content mb-5">
+        <div class="article-content mb-4">
             {!! nl2br(e($post->content)) !!}
         </div>
 
-        {{-- Author Signature Card --}}
-        <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-5">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar-badge" style="width: 52px; height: 52px; font-size: 1.3rem;">
-                    {{ strtoupper(substr($post->user->name, 0, 1)) }}
-                </div>
+        {{-- Thẻ từ khóa bài viết (Tags) --}}
+        @if($post->tags && $post->tags->count() > 0)
+        <div class="article-tags mb-4 d-flex flex-wrap align-items-center gap-2 pt-3 border-top">
+            <span class="text-muted small fw-bold"><i class="bi bi-tags-fill text-primary me-1"></i> Thẻ từ khóa:</span>
+            @foreach($post->tags as $tag)
+                <a href="{{ route('tag.show', $tag->slug) }}" class="badge bg-light text-secondary border rounded-pill px-3 py-2 text-decoration-none shadow-sm" style="font-size: 0.8rem; font-weight: 500;">
+                    #{{ $tag->name }}
+                </a>
+            @endforeach
+        </div>
+        @endif
+
+        {{-- KHỐI THẢ ICON CẢM XÚC BÀI VIẾT (REACTIONS) --}}
+        <div class="reaction-container mb-5" id="reaction-section">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3 pb-3 border-bottom">
                 <div>
-                    <h6 class="fw-bold mb-1">{{ $post->user->name }}</h6>
-                    <p class="text-muted small mb-0">
-                        {{ $post->user->bio ?? 'Tác giả bài viết trên nền tảng Tin tức & Blog cá nhân.' }}
-                    </p>
+                    <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                        <span>✨ Cảm xúc của bạn về bài viết?</span>
+                    </h5>
+                    <p class="text-muted small mb-0">Thả biểu tượng icon để bày tỏ cảm xúc và ủng hộ tác giả bài viết</p>
+                </div>
+                <div class="text-sm-end">
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold shadow-sm" style="font-size: 0.82rem;">
+                        <span id="total-reactions-count">{{ number_format($reactionCounts['total']) }}</span> lượt cảm xúc
+                    </span>
+                </div>
+            </div>
+
+            <!-- Reaction Buttons Grid -->
+            <div class="d-flex flex-wrap gap-2 justify-content-start" id="reaction-buttons-bar">
+                @php
+                    $reactionsList = [
+                        'like'  => ['icon' => '👍', 'label' => 'Thích'],
+                        'love'  => ['icon' => '❤️', 'label' => 'Yêu thích'],
+                        'haha'  => ['icon' => '😂', 'label' => 'Haha'],
+                        'wow'   => ['icon' => '😮', 'label' => 'Wow'],
+                        'sad'   => ['icon' => '😢', 'label' => 'Buồn'],
+                        'angry' => ['icon' => '😡', 'label' => 'Phẫn nộ'],
+                    ];
+                @endphp
+
+                @foreach($reactionsList as $type => $info)
+                <button type="button" 
+                        class="reaction-btn {{ $userReaction === $type ? 'active ' . $type : '' }}" 
+                        data-type="{{ $type }}"
+                        onclick="sendReaction('{{ $type }}', this)"
+                        title="{{ $info['label'] }}">
+                    <span class="reaction-emoji">{{ $info['icon'] }}</span>
+                    <span class="d-none d-md-inline reaction-label">{{ $info['label'] }}</span>
+                    <span class="reaction-count" id="count-{{ $type }}">{{ $reactionCounts[$type] }}</span>
+                </button>
+                @endforeach
+            </div>
+
+            @guest
+            <div class="mt-3 pt-2 text-muted small d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-primary"></i>
+                <span>Bạn cần <a href="{{ route('login') }}" class="fw-bold text-primary text-decoration-none">Đăng nhập</a> để ghi nhận biểu tượng cảm xúc.</span>
+            </div>
+            @endguest
+        </div>
+
+        {{-- Author Signature Card with Level & XP Gamification & Follow --}}
+        <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-5">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    @if ($post->user->avatar)
+                        <img src="{{ asset('storage/' . $post->user->avatar) }}" class="rounded-circle shadow-sm" style="width: 56px; height: 56px; object-fit: cover;">
+                    @else
+                        <div class="avatar-badge shadow-sm" style="width: 56px; height: 56px; font-size: 1.4rem;">
+                            {{ strtoupper(substr($post->user->name, 0, 1)) }}
+                        </div>
+                    @endif
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <h6 class="fw-bold mb-0 text-dark fs-5">{{ $post->user->name }}</h6>
+                            <span class="badge rounded-pill text-white shadow-sm" style="background: {{ $post->user->level_badge_color }}; font-size: 0.72rem; padding: 3px 8px;">
+                                <i class="bi bi-star-fill me-1"></i> Lv.{{ $post->user->level }} • {{ $post->user->level_title }}
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-0">
+                            {{ $post->user->bio ?? 'Tác giả bài viết trên nền tảng Tin tức & Blog cá nhân.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 pt-2 pt-md-0 border-top border-md-0">
+                    <div class="text-md-end me-2">
+                        <div class="small fw-bold text-dark">{{ $post->user->publishedPosts->count() }} bài xuất bản</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">
+                            <span id="author-followers-count-{{ $post->user_id }}">{{ $post->user->followers->count() }}</span> người theo dõi • {{ number_format($post->user->exp) }} EXP
+                        </div>
+                    </div>
+                    @if(!auth()->check() || auth()->id() !== $post->user_id)
+                    <button type="button"
+                            id="btn-follow-card-{{ $post->user_id }}"
+                            onclick="toggleFollow({{ $post->user_id }}, this)"
+                            class="btn btn-sm {{ $isFollowingAuthor ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-3 fw-bold">
+                        <i class="bi {{ $isFollowingAuthor ? 'bi-check-lg' : 'bi-person-plus' }} me-1"></i>
+                        <span class="follow-text">{{ $isFollowingAuthor ? 'Đang theo dõi' : 'Theo dõi' }}</span>
+                    </button>
+                    @endif
+                    <a href="{{ route('members.index', ['tab' => 'posts', 'q' => $post->user->name]) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold" title="Xem trên Bảng Xếp Hạng">
+                        <i class="bi bi-trophy-fill text-warning me-1"></i> Xếp hạng
+                    </a>
                 </div>
             </div>
         </div>
@@ -186,14 +304,14 @@
                 <h4 class="fw-bold mb-0">
                     <i class="bi bi-chat-left-dots text-primary me-2"></i>Bình luận
                     <span class="badge bg-primary-subtle text-primary rounded-pill ms-1 fs-6">
-                        {{ $post->comments->count() }}
+                        {{ $post->allComments()->count() }}
                     </span>
                 </h4>
                 <span class="small text-muted">Ý kiến độc giả</span>
             </div>
 
             @auth
-            {{-- Form gửi comment --}}
+            {{-- Form gửi comment gốc --}}
             <form action="{{ route('comments.store', $post->id) }}" method="POST" class="mb-4" id="comment-form">
                 @csrf
                 <div class="d-flex gap-3 mb-2">
@@ -240,15 +358,15 @@
             </div>
             @endauth
 
-            {{-- Danh sách bình luận --}}
+            {{-- Danh sách bình luận gốc và phản hồi lồng nhau --}}
             <div class="comments-list mt-3">
                 @forelse($post->comments as $comment)
-                <div class="comment-item" id="comment-{{ $comment->id }}">
+                <div class="comment-item mb-4" id="comment-{{ $comment->id }}">
                     <div class="comment-avatar">
                         {{ strtoupper(substr($comment->user->name, 0, 1)) }}
                     </div>
 
-                    <div class="comment-content-wrap">
+                    <div class="comment-content-wrap flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="fw-bold text-dark small">{{ $comment->user->name }}</span>
@@ -297,6 +415,89 @@
                                 {{ $comment->content }}
                             </p>
                         </div>
+
+                        {{-- Nút Trả lời và số phản hồi --}}
+                        <div class="d-flex align-items-center gap-2 mt-2 ps-1">
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none text-primary p-0 fw-semibold" style="font-size: 0.8rem;" onclick="toggleReplyBox({{ $comment->id }})">
+                                <i class="bi bi-reply-fill me-1"></i> Trả lời
+                            </button>
+                            @if($comment->replies && $comment->replies->count() > 0)
+                            <span class="text-muted small">•</span>
+                            <span class="text-muted small" style="font-size: 0.8rem;">
+                                <i class="bi bi-chat-dots me-1"></i> {{ $comment->replies->count() }} phản hồi
+                            </span>
+                            @endif
+                        </div>
+
+                        {{-- Form trả lời bình luận (toggle ẩn/hiện) --}}
+                        <div id="reply-box-{{ $comment->id }}" class="mt-2 mb-3 d-none">
+                            @auth
+                            <form action="{{ route('comments.store', $post->id) }}" method="POST" class="bg-light p-3 rounded-3 border">
+                                @csrf
+                                <input type="hidden" name="parent_id" value="{{ $comment->id }}">
+                                <div class="mb-2">
+                                    <textarea name="content" class="form-control form-control-sm" rows="2" placeholder="Trả lời bình luận của {{ $comment->user->name }}..." required></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" onclick="toggleReplyBox({{ $comment->id }})">Hủy</button>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">Gửi phản hồi</button>
+                                </div>
+                            </form>
+                            @else
+                            <div class="p-2 px-3 bg-light rounded-3 border small text-muted">
+                                Vui lòng <a href="{{ route('login') }}" class="text-primary fw-bold">đăng nhập</a> để trả lời bình luận.
+                            </div>
+                            @endauth
+                        </div>
+
+                        {{-- Danh sách phản hồi (Replies) lồng nhau --}}
+                        @if($comment->replies && $comment->replies->count() > 0)
+                        <div class="nested-replies-list ms-3 ms-md-4 mt-3 ps-3 border-start border-2 border-primary-subtle d-flex flex-column gap-3">
+                            @foreach($comment->replies as $reply)
+                            <div class="reply-item d-flex gap-2" id="comment-{{ $reply->id }}">
+                                <div class="comment-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; flex-shrink: 0;">
+                                    {{ strtoupper(substr($reply->user->name, 0, 1)) }}
+                                </div>
+                                <div class="comment-content-wrap flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="fw-bold text-dark small">{{ $reply->user->name }}</span>
+                                            @if($reply->user_id === $post->user_id)
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size: 0.62rem;">Tác giả</span>
+                                            @endif
+                                            @if($reply->user->isAdmin())
+                                            <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill" style="font-size: 0.62rem;">Admin</span>
+                                            @endif
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <small class="text-muted" style="font-size: 0.72rem;">
+                                                {{ $reply->created_at->diffForHumans() }}
+                                            </small>
+                                            @auth
+                                            @if(auth()->id() === $reply->user_id)
+                                            <form action="{{ route('comments.destroy', $reply->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa phản hồi này?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0 ms-1" title="Xóa phản hồi">
+                                                    <i class="bi bi-trash3 small"></i>
+                                                </button>
+                                            </form>
+                                            @else
+                                            <button type="button" class="btn btn-sm btn-link text-secondary p-0 ms-1" onclick="openReportCommentModal({{ $reply->id }}, '{{ addslashes(Str::limit($reply->content, 60)) }}')" title="Báo cáo vi phạm">
+                                                <i class="bi bi-flag small"></i>
+                                            </button>
+                                            @endif
+                                            @endauth
+                                        </div>
+                                    </div>
+                                    <div class="comment-bubble py-2 px-3 mt-1 bg-light border">
+                                        <p class="mb-0 text-secondary" style="font-size: 0.88rem; line-height: 1.5;">{{ $reply->content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
                     </div>
                 </div>
                 @empty
@@ -407,6 +608,17 @@
 
 @push('scripts')
 <script>
+    function toggleReplyBox(id) {
+        const box = document.getElementById('reply-box-' + id);
+        if (box) {
+            box.classList.toggle('d-none');
+            const ta = box.querySelector('textarea');
+            if (ta && !box.classList.contains('d-none')) {
+                ta.focus();
+            }
+        }
+    }
+
     function openReportCommentModal(commentId, previewText) {
         document.getElementById('report-comment-id').value = commentId;
         document.getElementById('report-comment-preview').textContent = previewText;
@@ -448,6 +660,63 @@
     const textarea = document.getElementById('comment-content');
     if (textarea && textarea.value.length > 0) {
         updateCharCount(textarea);
+    }
+
+    function sendReaction(type, btn) {
+        @guest
+            if (confirm('Bạn cần đăng nhập để thả cảm xúc cho bài viết. Bạn có muốn chuyển đến trang Đăng nhập ngay không?')) {
+                window.location.href = "{{ route('login') }}";
+            }
+            return;
+        @endguest
+
+        // Hiệu ứng nảy biểu tượng
+        btn.classList.add('popping');
+        setTimeout(() => btn.classList.remove('popping'), 400);
+
+        fetch("{{ route('posts.reactions.toggle', $post->id) }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ type: type })
+        })
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('Lỗi kết nối');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success) {
+                const types = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+                types.forEach(t => {
+                    const el = document.getElementById('count-' + t);
+                    if (el && data.counts[t] !== undefined) {
+                        el.textContent = data.counts[t];
+                    }
+                    const b = document.querySelector(`.reaction-btn[data-type="${t}"]`);
+                    if (b) {
+                        b.className = 'reaction-btn';
+                        if (data.user_reaction === t) {
+                            b.classList.add('active', t);
+                        }
+                    }
+                });
+
+                const totalEl = document.getElementById('total-reactions-count');
+                if (totalEl && data.counts.total !== undefined) {
+                    totalEl.textContent = new Intl.NumberFormat().format(data.counts.total);
+                }
+            }
+        })
+        .catch(err => console.error('Lỗi thả cảm xúc:', err));
     }
 
     document.addEventListener('DOMContentLoaded', function() {

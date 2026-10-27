@@ -128,11 +128,14 @@ class UserPostController extends Controller
             abort(403, 'Bạn không có quyền xóa bài viết này.');
         }
 
+        $author = $post->user;
+
         if ($post->thumbnail && Storage::disk('public')->exists($post->thumbnail)) {
             Storage::disk('public')->delete($post->thumbnail);
         }
 
         $post->delete();
+        $author?->syncExpAndLevel();
 
         return redirect()->route('user.posts.index')->with('success', 'Đã xóa bài viết thành công!');
     }

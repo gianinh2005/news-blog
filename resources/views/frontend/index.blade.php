@@ -18,7 +18,7 @@
         </p>
 
         <div class="hero-chips">
-            <span class="text-white-50 small align-self-center me-1">Chủ đề nổi bật:</span>
+            <span class="small align-self-center me-1" style="color: #cbd5e1; font-weight: 500;">Chủ đề nổi bật:</span>
             @foreach($categories->take(4) as $cat)
                 <a href="{{ route('category.show', $cat->slug) }}" class="hero-chip-link">
                     #{{ $cat->name }}
@@ -37,6 +37,8 @@
                 <h3 class="fw-bold mb-0" style="letter-spacing: -0.02em;">
                     @if(request('q'))
                         <i class="bi bi-search text-primary me-2"></i>Kết quả cho: "{{ request('q') }}"
+                    @elseif(request('filter') == 'following')
+                        <i class="bi bi-people-fill text-primary me-2"></i>Tác giả đang theo dõi
                     @elseif(request('type') == 'news')
                         <i class="bi bi-lightning-charge text-danger me-2"></i>Bản tin thời sự
                     @elseif(request('type') == 'blog')
@@ -48,10 +50,10 @@
                 <span class="text-muted small">Cập nhật liên tục những nội dung giá trị nhất</span>
             </div>
 
-            {{-- Tabs chuyển đổi Tin tức / Blog --}}
+            {{-- Tabs chuyển đổi Tin tức / Blog / Theo dõi --}}
             <div class="btn-group p-1 bg-white rounded-pill shadow-sm border">
                 <a href="{{ route('home') }}"
-                   class="btn btn-sm rounded-pill px-3 fw-semibold {{ !request('type') ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary' }}">
+                   class="btn btn-sm rounded-pill px-3 fw-semibold {{ !request('type') && !request('filter') ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary' }}">
                     Tất cả
                 </a>
                 <a href="{{ route('home', ['type' => 'news']) }}"
@@ -62,6 +64,12 @@
                    class="btn btn-sm rounded-pill px-3 fw-semibold {{ request('type') == 'blog' ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary' }}">
                     Blog
                 </a>
+                @auth
+                <a href="{{ route('home', ['filter' => 'following']) }}"
+                   class="btn btn-sm rounded-pill px-3 fw-semibold {{ request('filter') == 'following' ? 'btn-primary shadow-sm' : 'btn-light border-0 text-secondary' }}">
+                    <i class="bi bi-people me-1"></i> Đang theo dõi
+                </a>
+                @endauth
             </div>
         </div>
 
@@ -70,8 +78,8 @@
             @forelse($posts as $post)
                 <div class="col-md-6">
                     <article class="post-card h-100">
-                        {{-- Thumbnail với badge nổi --}}
-                        <div class="post-thumb-wrap">
+                        {{-- Thumbnail với badge nổi & Bookmark --}}
+                        <div class="post-thumb-wrap position-relative">
                             <a href="{{ route('post.show', $post->slug) }}" class="d-block h-100">
                                 <img
                                     src="{{ $post->thumbnail ? asset('storage/' . $post->thumbnail) : 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&auto=format&fit=crop&q=75' }}"
@@ -85,6 +93,15 @@
                                 <i class="bi {{ $post->type === 'news' ? 'bi-lightning-fill' : 'bi-feather' }} me-1"></i>
                                 {{ $post->type === 'news' ? 'Tin tức' : 'Blog' }}
                             </span>
+
+                            {{-- Nút Bookmark nhanh trên Card --}}
+                            <button type="button" 
+                                    onclick="event.preventDefault(); toggleBookmark({{ $post->id }}, this)"
+                                    class="position-absolute top-0 end-0 m-2 btn btn-sm btn-light rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+                                    style="width: 32px; height: 32px; z-index: 5;"
+                                    title="Lưu bài viết">
+                                <i class="bi {{ auth()->check() && $post->isSavedBy(auth()->user()) ? 'bi-bookmark-fill text-warning' : 'bi-bookmark text-dark' }}"></i>
+                            </button>
                         </div>
 
                         {{-- Thân Card --}}
@@ -109,6 +126,17 @@
                             <p class="post-excerpt">
                                 {{ Str::limit($post->summary ?? strip_tags($post->content), 105) }}
                             </p>
+
+                            {{-- Thẻ từ khóa (Tags) --}}
+                            @if($post->tags->count() > 0)
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                @foreach($post->tags->take(2) as $tag)
+                                <a href="{{ route('tag.show', $tag->slug) }}" class="badge bg-light text-secondary border text-decoration-none" style="font-size: 0.7rem;">
+                                    #{{ $tag->name }}
+                                </a>
+                                @endforeach
+                            </div>
+                            @endif
 
                             {{-- Footer Card: Tác giả & lượt xem + thời gian đọc ước tính --}}
                             <div class="post-footer-meta">
@@ -146,7 +174,7 @@
         </div>
     </div>
 
-    <!-- Cột phải (Sidebar): Danh mục, bài đọc nhiều, CTA viết bài -->
+    <!-- Cột phải (Sidebar): Danh mục, Thẻ tag, bài đọc nhiều, CTA viết bài -->
     <div class="col-lg-4">
         {{-- Widget Danh mục --}}
         <div class="widget-card">
@@ -159,6 +187,20 @@
                     <a href="{{ route('category.show', $category->slug) }}" class="widget-cat-item">
                         <span>{{ $category->name }}</span>
                         <span class="widget-cat-badge">{{ $category->posts_count }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Widget Thẻ từ khóa phổ biến --}}
+        <div class="widget-card">
+            <div class="widget-title">
+                <span><i class="bi bi-tags text-primary me-2"></i>Thẻ từ khóa nổi bật</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach($popularTags as $tag)
+                    <a href="{{ route('tag.show', $tag->slug) }}" class="badge bg-light text-secondary border rounded-pill px-3 py-2 text-decoration-none shadow-sm" style="font-size: 0.78rem;">
+                        #{{ $tag->name }} <small class="text-muted">({{ $tag->posts_count }})</small>
                     </a>
                 @endforeach
             </div>

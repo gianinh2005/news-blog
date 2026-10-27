@@ -61,7 +61,8 @@ class PostController extends Controller
             $data['thumbnail'] = $request->file('thumbnail')->store('posts', 'public');
         }
 
-        Post::create($data);
+        $newPost = Post::create($data);
+        $newPost->user?->syncExpAndLevel();
 
         return redirect()->route('admin.posts.index')->with('success', 'Đã thêm bài viết thành công!');
     }
@@ -106,6 +107,7 @@ class PostController extends Controller
         }
 
         $post->update($data);
+        $post->user?->syncExpAndLevel();
 
         return redirect()->route('admin.posts.index')->with('success', 'Cập nhật bài viết thành công!');
     }
@@ -121,7 +123,13 @@ class PostController extends Controller
             'reject_reason' => null,
         ]);
 
-        return back()->with('success', "Đã phê duyệt và xuất bản bài viết '{$post->title}'!");
+        // Thưởng EXP và tăng cấp cho người viết bài
+        $post->user?->syncExpAndLevel();
+
+        // Gửi thông báo phê duyệt tới tác giả
+        $post->user?->notify(new \App\Notifications\PostStatusNotification($post, 'published'));
+
+        return back()->with('success', "Đã phê duyệt và xuất bản bài viết '{$post->title}'! Tác giả nhận được +100 EXP.");
     }
 
     /**
@@ -138,15 +146,24 @@ class PostController extends Controller
             'reject_reason' => $request->reject_reason,
         ]);
 
+        $post->user?->syncExpAndLevel();
+
+        // Gửi thông báo từ chối tới tác giả
+        $post->user?->notify(new \App\Notifications\PostStatusNotification($post, 'rejected', $request->reject_reason));
+
         return back()->with('success', "Đã từ chối bài viết '{$post->title}'!");
     }
 
     public function destroy(Post $post)
     {
+        $author = $post->user;
+
         if ($post->thumbnail) {
             Storage::disk('public')->delete($post->thumbnail);
         }
         $post->delete();
+
+        $author?->syncExpAndLevel();
 
         return redirect()->route('admin.posts.index')->with('success', 'Xóa bài viết thành công!');
     }

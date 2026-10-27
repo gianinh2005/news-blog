@@ -7,7 +7,7 @@
         <div class="card border-0 shadow-lg rounded-4 p-3 bg-white">
             <div class="card-body p-3 p-sm-4">
                 <div class="text-center mb-4">
-                    <div class="brand-icon mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem; background: linear-gradient(135deg, #f59e0b, #ef4444);">
+                    <div class="brand-icon mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem; background: #2563eb;">
                         <i class="bi bi-key-fill text-white"></i>
                     </div>
                     <h4 class="fw-bold mb-1">Quên mật khẩu?</h4>
