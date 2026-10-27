@@ -157,7 +157,7 @@
 
     {{-- === PHÂN TRANG === --}}
     @if($comments->hasPages())
-        <div class="card-footer bg-white border-top py-3">
+        <div class="card-footer bg-white border-top py-3 px-4">
             {{ $comments->links() }}
         </div>
     @endif

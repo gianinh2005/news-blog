@@ -155,7 +155,9 @@
     </div>
 </div>
 
-<div class="mt-4">
-    {{ $posts->links('pagination::bootstrap-5') }}
-</div>
+@if ($posts->hasPages())
+    <div class="mt-4 pt-2">
+        {{ $posts->links() }}
+    </div>
+@endif
 @endsection

@@ -119,6 +119,40 @@
             justify-content: center;
             font-size: 1.5rem;
         }
+
+        /* Custom Pagination Styling for Clean Look */
+        .pagination {
+            margin-bottom: 0 !important;
+            gap: 4px;
+        }
+        .pagination .page-item .page-link {
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #94a3b8;
+            background-color: #f8fafc;
+        }
+        /* Khống chế kích thước mọi SVG phân trang để không bị to đột biến */
+        .pagination svg,
+        nav[role="navigation"] svg {
+            width: 14px !important;
+            height: 14px !important;
+            max-width: 14px !important;
+            max-height: 14px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
     </style>
 </head>
 <body>

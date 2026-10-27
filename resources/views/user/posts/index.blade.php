@@ -102,8 +102,8 @@
                 </div>
             </div>
             @if($posts->hasPages())
-                <div class="card-footer bg-white py-3 border-0">
-                    {{ $posts->links('pagination::bootstrap-5') }}
+                <div class="card-footer bg-white py-3 px-4 border-top">
+                    {{ $posts->links() }}
                 </div>
             @endif
         </div>

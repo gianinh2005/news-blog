@@ -233,8 +233,8 @@
         </div>
     </div>
     @if($reports->hasPages())
-        <div class="card-footer bg-white border-0 py-3">
-            {{ $reports->links('pagination::bootstrap-5') }}
+        <div class="card-footer bg-white border-top py-3 px-4">
+            {{ $reports->links() }}
         </div>
     @endif
 </div>

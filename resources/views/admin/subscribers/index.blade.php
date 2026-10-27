@@ -71,8 +71,10 @@
         </table>
     </div>
 
-    <div class="mt-4 d-flex justify-content-center">
-        {{ $subscribers->links('pagination::bootstrap-5') }}
-    </div>
+    @if ($subscribers->hasPages())
+        <div class="mt-4 pt-3 border-top">
+            {{ $subscribers->links() }}
+        </div>
+    @endif
 </div>
 @endsection

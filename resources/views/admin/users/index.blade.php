@@ -168,7 +168,7 @@
         </div>
 
         @if ($users->hasPages())
-            <div class="card-footer bg-white border-0 p-3">
+            <div class="card-footer bg-white border-top py-3 px-4">
                 {{ $users->links() }}
             </div>
         @endif

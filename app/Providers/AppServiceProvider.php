@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Sử dụng giao diện phân trang Bootstrap 5 mặc định toàn hệ thống
+        Paginator::useBootstrapFive();
+
         // Tự động nhận diện URL Codespaces hoặc reverse proxy
         if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
             $proto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? 'https';
