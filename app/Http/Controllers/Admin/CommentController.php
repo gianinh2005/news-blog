@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
 use App\Models\Comment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -54,6 +56,21 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment): RedirectResponse
     {
+        $userName = $comment->user?->name ?? 'Người dùng';
+        $snippet = Str::limit($comment->content, 60);
+
+        AdminLog::record(
+            action: 'delete_comment',
+            description: "Xóa bình luận của {$userName}: \"{$snippet}\"",
+            actionType: 'comment',
+            subject: $comment,
+            properties: [
+                'comment_id' => $comment->id,
+                'author' => $userName,
+                'content' => $comment->content,
+            ]
+        );
+
         $comment->delete();
 
         return back()->with('success', 'Đã xóa bình luận thành công.');

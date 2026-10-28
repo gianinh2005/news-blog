@@ -87,11 +87,11 @@ class Post extends Model
     public function getReactionCounts(): array
     {
         $counts = [
-            'like'  => 0,
-            'love'  => 0,
-            'haha'  => 0,
-            'wow'   => 0,
-            'sad'   => 0,
+            'like' => 0,
+            'love' => 0,
+            'haha' => 0,
+            'wow' => 0,
+            'sad' => 0,
             'angry' => 0,
             'total' => 0,
         ];

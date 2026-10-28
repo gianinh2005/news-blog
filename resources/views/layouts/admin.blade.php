@@ -219,6 +219,14 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}"
+                                href="{{ route('admin.logs.index') }}">
+                            <i class="bi bi-clock-history me-2"></i> Nhật ký hoạt động
+                        </a>
+                    </li>
+
+
                     <li class="nav-item border-top border-secondary pt-3 mt-4">
                         <a class="nav-link text-info" href="{{ route('home') }}" target="_blank">
                             <i class="bi bi-box-arrow-up-right me-2"></i> Xem trang Client

@@ -79,10 +79,10 @@ class MemberController extends Controller
 
         // Thống kê toàn cộng đồng (không tính tài khoản admin trong tổng thành viên)
         $stats = [
-            'total_members'      => User::where('is_active', true)->where('role', '!=', 'admin')->count(),
-            'total_posts'        => Post::where('status', 'published')->count(),
-            'total_reactions'    => PostReaction::count(),
-            'total_views'        => (int) Post::where('status', 'published')->sum('views'),
+            'total_members' => User::where('is_active', true)->where('role', '!=', 'admin')->count(),
+            'total_posts' => Post::where('status', 'published')->count(),
+            'total_reactions' => PostReaction::count(),
+            'total_views' => (int) Post::where('status', 'published')->sum('views'),
         ];
 
         return view('frontend.members', compact(

@@ -17,11 +17,11 @@ class PostReaction extends Model
     ];
 
     public const TYPES = [
-        'like'  => ['label' => 'Thích', 'icon' => '👍', 'color' => '#3b82f6'],
-        'love'  => ['label' => 'Yêu thích', 'icon' => '❤️', 'color' => '#ef4444'],
-        'haha'  => ['label' => 'Haha', 'icon' => '😂', 'color' => '#f59e0b'],
-        'wow'   => ['label' => 'Wow', 'icon' => '😮', 'color' => '#10b981'],
-        'sad'   => ['label' => 'Buồn', 'icon' => '😢', 'color' => '#6366f1'],
+        'like' => ['label' => 'Thích', 'icon' => '👍', 'color' => '#3b82f6'],
+        'love' => ['label' => 'Yêu thích', 'icon' => '❤️', 'color' => '#ef4444'],
+        'haha' => ['label' => 'Haha', 'icon' => '😂', 'color' => '#f59e0b'],
+        'wow' => ['label' => 'Wow', 'icon' => '😮', 'color' => '#10b981'],
+        'sad' => ['label' => 'Buồn', 'icon' => '😢', 'color' => '#6366f1'],
         'angry' => ['label' => 'Phẫn nộ', 'icon' => '😡', 'color' => '#dc2626'],
     ];
 

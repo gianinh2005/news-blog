@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Report;
@@ -47,6 +48,8 @@ class ReportController extends Controller
             'admin_note' => $request->input('admin_note', 'Báo cáo không vi phạm tiêu chuẩn cộng đồng.'),
         ]);
 
+        AdminLog::record('dismiss_report', "Bác bỏ báo cáo vi phạm #{$report->id}", 'report', $report);
+
         return back()->with('success', 'Đã đánh dấu bác bỏ báo cáo này.');
     }
 
@@ -62,6 +65,8 @@ class ReportController extends Controller
                 'status' => 'resolved',
                 'admin_note' => 'Nội dung này vốn đã không còn tồn tại.',
             ]);
+
+            AdminLog::record('take_down_content', "Đóng báo cáo #{$report->id} (Nội dung không còn tồn tại)", 'report', $report);
 
             return back()->with('success', 'Nội dung mục tiêu không còn tồn tại. Đã đóng báo cáo.');
         }
@@ -86,6 +91,8 @@ class ReportController extends Controller
             'status' => 'resolved',
             'admin_note' => $request->input('admin_note', 'Đã gỡ nội dung vi phạm theo báo cáo.'),
         ]);
+
+        AdminLog::record('take_down_content', "Xử lý báo cáo #{$report->id}: {$msg}", 'report', $report);
 
         return back()->with('success', $msg);
     }
@@ -126,6 +133,14 @@ class ReportController extends Controller
             'status' => 'resolved',
             'admin_note' => $request->input('admin_note', "Đã tạm khóa tài khoản '{$author->name}' vi phạm."),
         ]);
+
+        AdminLog::record(
+            'lock_user_report',
+            "Khóa tài khoản người dùng '{$author->name}' ({$author->email}) do vi phạm theo báo cáo #{$report->id}",
+            'report',
+            $report,
+            ['user_id' => $author->id]
+        );
 
         return back()->with('success', "Đã tạm khóa tài khoản của người dùng '{$author->name}'.");
     }

@@ -22,12 +22,12 @@ class NewFollowerNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'type'        => 'follow',
-            'title'       => "{$this->follower->name} đã bắt đầu theo dõi bạn.",
-            'message'     => "Cộng đồng của bạn vừa có thêm 1 người theo dõi mới!",
-            'url'         => route('members.index', ['tab' => 'posts', 'q' => $this->follower->name]),
-            'actor_name'  => $this->follower->name,
-            'actor_avatar'=> $this->follower->avatar,
+            'type' => 'follow',
+            'title' => "{$this->follower->name} đã bắt đầu theo dõi bạn.",
+            'message' => 'Cộng đồng của bạn vừa có thêm 1 người theo dõi mới!',
+            'url' => route('members.index', ['tab' => 'posts', 'q' => $this->follower->name]),
+            'actor_name' => $this->follower->name,
+            'actor_avatar' => $this->follower->avatar,
         ];
     }
 }

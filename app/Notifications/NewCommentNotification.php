@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 
 class NewCommentNotification extends Notification
 {
@@ -25,18 +26,18 @@ class NewCommentNotification extends Notification
     public function toArray(object $notifiable): array
     {
         $post = $this->comment->post;
-        $title = $this->isReply 
+        $title = $this->isReply
             ? "{$this->commenter->name} đã trả lời bình luận của bạn."
             : "{$this->commenter->name} đã bình luận bài viết của bạn.";
 
         return [
-            'type'        => 'comment',
-            'title'       => $title,
-            'message'     => \Illuminate\Support\Str::limit($this->comment->content, 80),
-            'url'         => route('post.show', $post->slug) . '#comment-' . $this->comment->id,
-            'actor_name'  => $this->commenter->name,
-            'actor_avatar'=> $this->commenter->avatar,
-            'post_title'  => $post->title,
+            'type' => 'comment',
+            'title' => $title,
+            'message' => Str::limit($this->comment->content, 80),
+            'url' => route('post.show', $post->slug).'#comment-'.$this->comment->id,
+            'actor_name' => $this->commenter->name,
+            'actor_avatar' => $this->commenter->avatar,
+            'post_title' => $post->title,
         ];
     }
 }

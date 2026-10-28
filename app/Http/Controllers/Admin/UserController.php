@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -27,12 +28,18 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $actor = $request->user();
+
+        // Chỉ tài khoản admin@gmail.com mới có quyền thay đổi vai trò
+        if ($actor->email !== 'admin@gmail.com') {
+            abort(403, 'Chỉ tài khoản admin@gmail.com mới có quyền thay đổi vai trò người dùng.');
+        }
+
         $validated = $request->validate([
             'role' => ['required', Rule::in(['user', 'admin'])],
         ]);
 
         $newRole = $validated['role'];
-        $actor = $request->user();
 
         // Không cho Admin tự thay đổi quyền của chính mình.
         if ($actor->id === $user->id && $newRole !== $user->role) {
@@ -55,8 +62,17 @@ class UserController extends Controller
             ]);
         }
 
+        $oldRole = $user->role;
         $user->role = $newRole;
         $user->save();
+
+        AdminLog::record(
+            action: 'update_role',
+            description: "Thay đổi vai trò người dùng {$user->name} ({$user->email}) từ ".strtoupper($oldRole).' sang '.strtoupper($newRole),
+            actionType: 'user',
+            subject: $user,
+            properties: ['old_role' => $oldRole, 'new_role' => $newRole]
+        );
 
         return back()->with('success', 'Đã cập nhật vai trò người dùng.');
     }
@@ -94,6 +110,14 @@ class UserController extends Controller
         $message = $user->is_active
             ? 'Đã mở khóa tài khoản.'
             : 'Đã khóa tài khoản.';
+
+        AdminLog::record(
+            action: 'toggle_user_status',
+            description: ($user->is_active ? 'Mở khóa' : 'Khóa')." tài khoản người dùng: {$user->name} ({$user->email})",
+            actionType: 'user',
+            subject: $user,
+            properties: ['is_active' => $user->is_active]
+        );
 
         return back()->with('success', $message);
     }

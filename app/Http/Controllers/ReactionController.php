@@ -55,7 +55,7 @@ class ReactionController extends Controller
             PostReaction::create([
                 'post_id' => $post->id,
                 'user_id' => $userId,
-                'type'    => $type,
+                'type' => $type,
             ]);
         }
 
@@ -67,10 +67,57 @@ class ReactionController extends Controller
         $counts = $post->fresh()->getReactionCounts();
 
         return response()->json([
-            'success'       => true,
-            'action'        => $action,
+            'success' => true,
+            'action' => $action,
             'user_reaction' => $userReaction,
-            'counts'        => $counts,
+            'counts' => $counts,
+        ]);
+    }
+
+    /**
+     * Lấy danh sách người đã thả cảm xúc trên bài viết
+     */
+    public function users(Request $request, Post $post): JsonResponse
+    {
+        $type = $request->query('type');
+        $validTypes = array_keys(PostReaction::TYPES);
+
+        $query = $post->reactions()
+            ->with(['user:id,name,email,avatar,role,level'])
+            ->latest('updated_at');
+
+        if ($type && in_array($type, $validTypes, true)) {
+            $query->where('type', $type);
+        }
+
+        $reactions = $query->get()->map(function (PostReaction $reaction) {
+            $user = $reaction->user;
+            $typeInfo = PostReaction::TYPES[$reaction->type] ?? [
+                'label' => $reaction->type,
+                'icon' => '👍',
+                'color' => '#3b82f6',
+            ];
+
+            return [
+                'id' => $reaction->id,
+                'user_id' => $user?->id,
+                'user_name' => $user?->name ?? 'Người dùng',
+                'user_avatar' => $user?->avatar ? asset('storage/'.$user->avatar) : null,
+                'user_level' => $user?->level ?? 1,
+                'user_role' => $user?->role ?? 'user',
+                'reaction_type' => $reaction->type,
+                'reaction_label' => $typeInfo['label'],
+                'reaction_icon' => $typeInfo['icon'],
+                'created_at_human' => $reaction->updated_at?->diffForHumans() ?? $reaction->created_at?->diffForHumans() ?? '',
+            ];
+        });
+
+        $counts = $post->getReactionCounts();
+
+        return response()->json([
+            'success' => true,
+            'counts' => $counts,
+            'reactions' => $reactions,
         ]);
     }
 }

@@ -25,19 +25,19 @@ class PostStatusNotification extends Notification
     {
         $isApproved = $this->status === 'published';
         $title = $isApproved
-            ? "Bài viết của bạn đã được Admin phê duyệt!"
-            : "Bài viết của bạn đã bị từ chối xuất bản.";
+            ? 'Bài viết của bạn đã được Admin phê duyệt!'
+            : 'Bài viết của bạn đã bị từ chối xuất bản.';
 
         $message = $isApproved
             ? "Bài viết \"{$this->post->title}\" đã được xuất bản và bạn nhận được +100 EXP!"
             : ($this->reason ? "Lý do: {$this->reason}" : "Bài viết \"{$this->post->title}\" chưa đạt tiêu chuẩn kiểm duyệt.");
 
         return [
-            'type'        => $isApproved ? 'post_approved' : 'post_rejected',
-            'title'       => $title,
-            'message'     => $message,
-            'url'         => $isApproved ? route('post.show', $this->post->slug) : route('user.posts.index'),
-            'post_title'  => $this->post->title,
+            'type' => $isApproved ? 'post_approved' : 'post_rejected',
+            'title' => $title,
+            'message' => $message,
+            'url' => $isApproved ? route('post.show', $this->post->slug) : route('user.posts.index'),
+            'post_title' => $this->post->title,
         ];
     }
 }

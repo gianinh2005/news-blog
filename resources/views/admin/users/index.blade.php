@@ -4,7 +4,12 @@
 @section('title', 'Quản lý tài khoản')
 
 @section('content')
+@php
+    $isSuperAdmin = (auth()->user()?->email === 'admin@gmail.com');
+@endphp
+
 <div class="container-fluid py-3">
+
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div>
@@ -18,6 +23,18 @@
             Tổng: {{ $users->total() }} tài khoản
         </span>
     </div>
+
+    @if (! $isSuperAdmin)
+        <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 d-flex align-items-center gap-3">
+            <div class="fs-3 text-warning-emphasis"><i class="bi bi-shield-lock-fill"></i></div>
+            <div>
+                <div class="fw-bold">Chính sách bảo mật phân quyền</div>
+                <div class="small">
+                    Bạn đang đăng nhập bằng tài khoản <strong>{{ auth()->user()->email }}</strong>. Chỉ duy nhất tài khoản <code>admin@gmail.com</code> mới có quyền thay đổi vai trò (Role) của người dùng.
+                </div>
+            </div>
+        </div>
+    @endif
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -100,7 +117,8 @@
                                                 name="role"
                                                 class="form-select form-select-sm"
                                                 aria-label="Vai trò của {{ $user->name }}"
-                                                @disabled(auth()->id() === $user->id)
+                                                @disabled(auth()->id() === $user->id || ! $isSuperAdmin)
+                                                @if (! $isSuperAdmin) title="Chỉ tài khoản admin@gmail.com mới có quyền đổi vai trò" @endif
                                             >
                                                 <option value="user" @selected($user->role === 'user')>
                                                     User
@@ -113,7 +131,8 @@
                                             <button
                                                 type="submit"
                                                 class="btn btn-sm btn-outline-primary text-nowrap"
-                                                @disabled(auth()->id() === $user->id)
+                                                @disabled(auth()->id() === $user->id || ! $isSuperAdmin)
+                                                @if (! $isSuperAdmin) title="Chỉ tài khoản admin@gmail.com mới có quyền đổi vai trò" @endif
                                             >
                                                 Lưu quyền
                                             </button>

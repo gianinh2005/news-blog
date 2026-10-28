@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
 use App\Models\Category;
 use App\Models\Post;
+use App\Notifications\PostStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -64,6 +66,8 @@ class PostController extends Controller
         $newPost = Post::create($data);
         $newPost->user?->syncExpAndLevel();
 
+        AdminLog::record('create_post', "Tạo bài viết mới: '{$newPost->title}'", 'post', $newPost);
+
         return redirect()->route('admin.posts.index')->with('success', 'Đã thêm bài viết thành công!');
     }
 
@@ -109,6 +113,8 @@ class PostController extends Controller
         $post->update($data);
         $post->user?->syncExpAndLevel();
 
+        AdminLog::record('update_post', "Cập nhật bài viết: '{$post->title}'", 'post', $post);
+
         return redirect()->route('admin.posts.index')->with('success', 'Cập nhật bài viết thành công!');
     }
 
@@ -127,7 +133,9 @@ class PostController extends Controller
         $post->user?->syncExpAndLevel();
 
         // Gửi thông báo phê duyệt tới tác giả
-        $post->user?->notify(new \App\Notifications\PostStatusNotification($post, 'published'));
+        $post->user?->notify(new PostStatusNotification($post, 'published'));
+
+        AdminLog::record('approve_post', "Phê duyệt và xuất bản bài viết: '{$post->title}'", 'post', $post);
 
         return back()->with('success', "Đã phê duyệt và xuất bản bài viết '{$post->title}'! Tác giả nhận được +100 EXP.");
     }
@@ -149,7 +157,15 @@ class PostController extends Controller
         $post->user?->syncExpAndLevel();
 
         // Gửi thông báo từ chối tới tác giả
-        $post->user?->notify(new \App\Notifications\PostStatusNotification($post, 'rejected', $request->reject_reason));
+        $post->user?->notify(new PostStatusNotification($post, 'rejected', $request->reject_reason));
+
+        AdminLog::record(
+            'reject_post',
+            "Từ chối bài viết: '{$post->title}' - Lý do: {$request->reject_reason}",
+            'post',
+            $post,
+            ['reject_reason' => $request->reject_reason]
+        );
 
         return back()->with('success', "Đã từ chối bài viết '{$post->title}'!");
     }
@@ -157,6 +173,7 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         $author = $post->user;
+        $title = $post->title;
 
         if ($post->thumbnail) {
             Storage::disk('public')->delete($post->thumbnail);
@@ -164,6 +181,8 @@ class PostController extends Controller
         $post->delete();
 
         $author?->syncExpAndLevel();
+
+        AdminLog::record('delete_post', "Xóa bài viết: '{$title}'", 'post');
 
         return redirect()->route('admin.posts.index')->with('success', 'Xóa bài viết thành công!');
     }

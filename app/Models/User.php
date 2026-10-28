@@ -82,6 +82,7 @@ class User extends Authenticatable
     public function isFollowing(User|int $author): bool
     {
         $authorId = $author instanceof User ? $author->id : $author;
+
         return $this->following()->where('author_id', $authorId)->exists();
     }
 
@@ -137,7 +138,7 @@ class User extends Authenticatable
     {
         $currentExp = $this->exp ?? 0;
         $nextExp = $this->next_level_exp;
-        
+
         $prevLevelExp = match (true) {
             $this->level >= 6 => 2000,
             $this->level === 5 => 1000,
@@ -152,6 +153,7 @@ class User extends Authenticatable
         }
 
         $progress = (($currentExp - $prevLevelExp) / ($nextExp - $prevLevelExp)) * 100;
+
         return (int) max(0, min(100, round($progress)));
     }
 
@@ -208,8 +210,8 @@ class User extends Authenticatable
      */
     public function getInteractionScoreAttribute(): int
     {
-        return ($this->total_views_received * 1) 
-            + ($this->total_reactions_received * 5) 
+        return ($this->total_views_received * 1)
+            + ($this->total_reactions_received * 5)
             + ($this->total_comments_received * 3);
     }
 }

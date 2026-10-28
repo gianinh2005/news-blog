@@ -15,7 +15,7 @@ class ExportController extends Controller
      */
     public function exportPosts(): StreamedResponse
     {
-        $fileName = 'danh-sach-bai-viet-' . date('Y-m-d') . '.csv';
+        $fileName = 'danh-sach-bai-viet-'.date('Y-m-d').'.csv';
         $posts = Post::with(['user', 'category'])->latest()->get();
 
         $headers = [
@@ -55,7 +55,7 @@ class ExportController extends Controller
      */
     public function exportUsers(): StreamedResponse
     {
-        $fileName = 'danh-sach-thanh-vien-' . date('Y-m-d') . '.csv';
+        $fileName = 'danh-sach-thanh-vien-'.date('Y-m-d').'.csv';
         $users = User::withCount('publishedPosts')->latest()->get();
 
         $headers = [
@@ -95,7 +95,7 @@ class ExportController extends Controller
      */
     public function exportReports(): StreamedResponse
     {
-        $fileName = 'bao-cao-vi-pham-' . date('Y-m-d') . '.csv';
+        $fileName = 'bao-cao-vi-pham-'.date('Y-m-d').'.csv';
         $reports = Report::with(['user'])->latest()->get();
 
         $headers = [

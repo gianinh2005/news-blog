@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Models\User;
 use App\Notifications\NewCommentNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,19 +78,19 @@ class HomeController extends Controller
     public function showPost(Request $request, string $slug)
     {
         $post = Post::with([
-            'category', 
-            'user.followers', 
-            'comments.user', 
-            'comments.replies.user', 
-            'reactions', 
-            'tags'
+            'category',
+            'user.followers',
+            'comments.user',
+            'comments.replies.user',
+            'reactions',
+            'tags',
         ])
-        ->where('slug', $slug)
-        ->firstOrFail();
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         // Nếu bài chưa xuất bản, chỉ cho phép tác giả hoặc Admin xem trước
         if ($post->status !== 'published') {
-            /** @var \App\Models\User|null $user */
+            /** @var User|null $user */
             $user = Auth::user();
 
             if (! $user || ($user->id !== $post->user_id && ! $user->isAdmin())) {
@@ -109,9 +110,9 @@ class HomeController extends Controller
         $isFollowingAuthor = Auth::check() ? Auth::user()->isFollowing($post->user) : false;
 
         return view('frontend.detail', compact(
-            'post', 
-            'relatedPosts', 
-            'reactionCounts', 
+            'post',
+            'relatedPosts',
+            'reactionCounts',
             'userReaction',
             'isSaved',
             'isFollowingAuthor'
@@ -130,17 +131,17 @@ class HomeController extends Controller
             'parent_id' => ['nullable', 'exists:comments,id'],
         ], [
             'content.required' => 'Vui lòng nhập nội dung bình luận.',
-            'content.min'      => 'Bình luận phải có ít nhất 2 ký tự.',
-            'content.max'      => 'Bình luận không được vượt quá 1000 ký tự.',
+            'content.min' => 'Bình luận phải có ít nhất 2 ký tự.',
+            'content.max' => 'Bình luận không được vượt quá 1000 ký tự.',
         ]);
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $comment = $post->allComments()->create([
-            'user_id'   => $user->id,
+            'user_id' => $user->id,
             'parent_id' => $request->parent_id,
-            'content'   => $request->content,
+            'content' => $request->content,
         ]);
 
         // Gửi thông báo cho tác giả bài viết
@@ -165,13 +166,13 @@ class HomeController extends Controller
 
         return response()->json([
             'success' => true,
-            'views'   => number_format($post->views)
+            'views' => number_format($post->views),
         ]);
     }
 
     public function destroyComment(Comment $comment): RedirectResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if ($comment->user_id !== $user->id && ! $user->isAdmin()) {

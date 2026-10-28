@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminLogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -38,6 +39,8 @@ Route::get('/thanh-vien', [MemberController::class, 'index'])->name('members.ind
 // Thả icon cảm xúc bài viết
 Route::post('/bai-viet/{post}/reactions', [ReactionController::class, 'toggle'])
     ->name('posts.reactions.toggle');
+Route::get('/bai-viet/{post}/reactions/users', [ReactionController::class, 'users'])
+    ->name('posts.reactions.users');
 
 // Bình luận (cần đăng nhập)
 Route::post('/bai-viet/{post}/comments', [HomeController::class, 'storeComment'])
@@ -138,4 +141,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
     Route::patch('reports/{report}/take-down', [AdminReportController::class, 'takeDownContent'])->name('reports.take-down');
     Route::patch('reports/{report}/lock-user', [AdminReportController::class, 'lockUser'])->name('reports.lock-user');
+
+    // Nhật ký hoạt động (Lịch sử thao tác Admin)
+    Route::get('logs', [AdminLogController::class, 'index'])->name('logs.index');
+    Route::delete('logs/clear', [AdminLogController::class, 'clear'])->name('logs.clear');
 });

@@ -171,9 +171,15 @@
                     <p class="text-muted small mb-0">Thả biểu tượng icon để bày tỏ cảm xúc và ủng hộ tác giả bài viết</p>
                 </div>
                 <div class="text-sm-end">
-                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold shadow-sm" style="font-size: 0.82rem;">
+                    <button type="button" 
+                            id="btn-view-reactions" 
+                            class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold shadow-sm d-inline-flex align-items-center gap-1 text-decoration-none" 
+                            style="font-size: 0.82rem; cursor: pointer; transition: all 0.2s;" 
+                            onclick="openReactionsModal()"
+                            title="Bấm để xem danh sách người đã thả cảm xúc">
+                        <i class="bi bi-people-fill text-primary me-1"></i>
                         <span id="total-reactions-count">{{ number_format($reactionCounts['total']) }}</span> lượt cảm xúc
-                    </span>
+                    </button>
                 </div>
             </div>
 
@@ -198,7 +204,7 @@
                         title="{{ $info['label'] }}">
                     <span class="reaction-emoji">{{ $info['icon'] }}</span>
                     <span class="d-none d-md-inline reaction-label">{{ $info['label'] }}</span>
-                    <span class="reaction-count" id="count-{{ $type }}">{{ $reactionCounts[$type] }}</span>
+                    <span class="reaction-count" id="count-{{ $type }}" onclick="viewReactionUsersByType('{{ $type }}', event)" title="Bấm để xem ai đã thả {{ $info['label'] }}">{{ $reactionCounts[$type] }}</span>
                 </button>
                 @endforeach
             </div>
@@ -210,6 +216,56 @@
             </div>
             @endguest
         </div>
+
+        <!-- Modal Xem danh sách người đã thả cảm xúc -->
+        <div class="modal fade" id="reactionsListModal" tabindex="-1" aria-labelledby="reactionsListModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 480px;">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="modal-header border-bottom py-3 px-4 bg-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fs-5">✨</span>
+                            <h6 class="modal-title fw-bold text-dark mb-0" id="reactionsListModalLabel">
+                                Người bày tỏ cảm xúc
+                            </h6>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="p-2 border-bottom bg-white">
+                        <div class="d-flex gap-1 overflow-x-auto pb-1" id="reactions-filter-tabs" style="scrollbar-width: thin;">
+                            <button type="button" class="btn btn-sm rounded-pill px-3 fw-bold reaction-filter-btn active" data-filter="all" onclick="filterReactions('all')">
+                                Tất cả <span class="badge rounded-pill bg-light text-dark border ms-1" id="modal-tab-count-all">{{ $reactionCounts['total'] }}</span>
+                            </button>
+                            @foreach($reactionsList as $type => $info)
+                            <button type="button" class="btn btn-sm rounded-pill px-2 fw-semibold reaction-filter-btn text-nowrap" data-filter="{{ $type }}" onclick="filterReactions('{{ $type }}')">
+                                <span class="me-1">{{ $info['icon'] }}</span>
+                                <span class="badge rounded-pill bg-light text-dark border ms-1" id="modal-tab-count-{{ $type }}">{{ $reactionCounts[$type] }}</span>
+                            </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- User List Body -->
+                    <div class="modal-body p-3" id="reactions-modal-body" style="min-height: 250px; max-height: 380px; overflow-y: auto;">
+                        <div class="text-center py-5 text-muted">
+                            <div class="spinner-border text-primary spinner-border-sm mb-2" role="status"></div>
+                            <div class="small">Đang tải danh sách...</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer py-2 px-3 bg-light border-top d-flex justify-content-between align-items-center">
+                        <span class="small text-muted">
+                            <i class="bi bi-clock-history me-1"></i> Danh sách cập nhật gần nhất
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         {{-- Author Signature Card with Level & XP Gamification & Follow --}}
         <div class="card border-0 bg-white shadow-sm rounded-4 p-4 mb-5">
@@ -714,10 +770,155 @@
                 if (totalEl && data.counts.total !== undefined) {
                     totalEl.textContent = new Intl.NumberFormat().format(data.counts.total);
                 }
+
+                // Cập nhật số đếm trên các tab trong modal nếu có
+                const allModalBadge = document.getElementById('modal-tab-count-all');
+                if (allModalBadge && data.counts.total !== undefined) {
+                    allModalBadge.textContent = data.counts.total;
+                }
+                types.forEach(t => {
+                    const modalBadge = document.getElementById(`modal-tab-count-${t}`);
+                    if (modalBadge && data.counts[t] !== undefined) {
+                        modalBadge.textContent = data.counts[t];
+                    }
+                });
+
+                // Nếu modal đang mở, cập nhật lại danh sách người thả cảm xúc
+                const modalEl = document.getElementById('reactionsListModal');
+                if (modalEl && modalEl.classList.contains('show')) {
+                    loadReactionsUsers(currentReactionsFilter);
+                }
             }
         })
         .catch(err => console.error('Lỗi thả cảm xúc:', err));
     }
+
+    let reactionsModalInstance = null;
+    let currentReactionsFilter = 'all';
+
+    function openReactionsModal(defaultType = 'all') {
+        const modalEl = document.getElementById('reactionsListModal');
+        if (!modalEl) return;
+
+        if (!reactionsModalInstance) {
+            reactionsModalInstance = new bootstrap.Modal(modalEl);
+        }
+        reactionsModalInstance.show();
+        filterReactions(defaultType);
+    }
+
+    function viewReactionUsersByType(type, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        openReactionsModal(type);
+    }
+
+    function filterReactions(type) {
+        currentReactionsFilter = type;
+        document.querySelectorAll('.reaction-filter-btn').forEach(btn => {
+            if (btn.getAttribute('data-filter') === type) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+        loadReactionsUsers(type);
+    }
+
+    function loadReactionsUsers(type) {
+        const bodyEl = document.getElementById('reactions-modal-body');
+        if (!bodyEl) return;
+
+        bodyEl.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <div class="spinner-border text-primary spinner-border-sm mb-2" role="status"></div>
+                <div class="small">Đang tải danh sách...</div>
+            </div>
+        `;
+
+        const url = "{{ route('posts.reactions.users', $post->id) }}" + (type !== 'all' ? `?type=${type}` : '');
+
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                bodyEl.innerHTML = `<div class="text-center py-4 text-danger small">Không thể nạp danh sách.</div>`;
+                return;
+            }
+
+            if (data.counts) {
+                const allEl = document.getElementById('modal-tab-count-all');
+                if (allEl) allEl.textContent = data.counts.total ?? 0;
+                const types = ['like', 'love', 'haha', 'wow', 'sad', 'angry'];
+                types.forEach(t => {
+                    const el = document.getElementById(`modal-tab-count-${t}`);
+                    if (el) el.textContent = data.counts[t] ?? 0;
+                });
+            }
+
+            if (!data.reactions || data.reactions.length === 0) {
+                bodyEl.innerHTML = `
+                    <div class="text-center py-5 text-muted">
+                        <div class="fs-1 mb-2">🍃</div>
+                        <div class="fw-semibold">Chưa có ai bày tỏ cảm xúc này</div>
+                        <div class="small text-secondary">Hãy thả cảm xúc để ủng hộ tác giả!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="d-flex flex-column gap-1">';
+            data.reactions.forEach(r => {
+                const avatarHtml = r.user_avatar
+                    ? `<img src="${r.user_avatar}" class="rounded-circle shadow-sm" style="width: 42px; height: 42px; object-fit: cover;" alt="${r.user_name}">`
+                    : `<div class="avatar-badge rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="width: 42px; height: 42px; font-size: 0.95rem; background: linear-gradient(135deg, #4f46e5, #06b6d4);">${r.user_name.charAt(0).toUpperCase()}</div>`;
+
+                const adminBadge = r.user_role === 'admin'
+                    ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.65rem;">Admin</span>`
+                    : '';
+
+                const levelBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size: 0.65rem;">Cấp ${r.user_level}</span>`;
+
+                html += `
+                    <div class="d-flex align-items-center justify-content-between p-2 rounded-3 reaction-user-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="position-relative">
+                                ${avatarHtml}
+                                <span class="position-absolute bottom-0 end-0 rounded-circle bg-white shadow-sm d-flex align-items-center justify-content-center" style="width: 20px; height: 20px; font-size: 11px; transform: translate(15%, 15%); border: 1px solid #f1f5f9;">
+                                    ${r.reaction_icon}
+                                </span>
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                    <span class="fw-bold text-dark small">${r.user_name}</span>
+                                    ${adminBadge}
+                                    ${levelBadge}
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    <span class="fw-semibold text-secondary">${r.reaction_label}</span> • ${r.created_at_human}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            bodyEl.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Lỗi tải danh sách thả cảm xúc:', err);
+            bodyEl.innerHTML = `<div class="text-center py-4 text-danger small">Không thể kết nối đến máy chủ.</div>`;
+        });
+    }
+
 
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/posts/{{ $post->id }}/increment-views', {
